@@ -7,4 +7,6 @@ The task is to classify each cassava image into five categories indicating - pla
 
 Organizers introduced a dataset of 21,367 labeled images collected during a regular survey in Uganda. Most images were crowd-sourced from farmers taking photos of their gardens, and annotated by experts at the National Crops Resources Research Institute (NaCRRI) in collaboration with the AI lab at Makerere University, Kampala.
 
+![Sample images](./assets/images.jpg)
+
 It seems that there are already a few [submissions/notebooks with PL](https://www.kaggle.com/c/cassava-leaf-disease-classification/notebooks?competitionId=13836&searchQuery=lightning).
