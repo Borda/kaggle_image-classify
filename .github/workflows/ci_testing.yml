@@ -14,7 +14,7 @@ jobs:
       fail-fast: false
       matrix:
         os: [ubuntu-20.04, macOS-10.15, windows-2019]
-        python-version: [3.6, 3.8]
+        python-version: [3.7]
 
     # Timeout: https://stackoverflow.com/a/59076067/4521646
     timeout-minutes: 25
@@ -26,6 +26,7 @@ jobs:
       with:
         python-version: ${{ matrix.python-version }}
 
+    - run: pip install "pip>=20.1" --user
     # Note: This uses an internal pip API and may not always work
     # https://github.com/actions/cache/blob/master/examples.md#multiple-oss-in-a-workflow
     - name: Get pip cache
@@ -44,15 +45,14 @@ jobs:
 
     - name: Install dependencies
       run: |
-        pip install --requirement requirements.txt --upgrade --quiet --find-links https://download.pytorch.org/whl/cpu/torch_stable.html
-        pip install --requirement tests/requirements.txt --quiet
+        pip install --requirement requirements.txt --upgrade --find-links https://download.pytorch.org/whl/cpu/torch_stable.html
+        pip install --requirement tests/requirements.txt
         pip list
       shell: bash
 
     - name: Tests
       run: |
-        python -m pytest . -v --junitxml=junit/test-results-${{ runner.os }}-${{ matrix.python-version }}.xml
-        coverage run --source cldc -m pytest . -v --junitxml=junit/test-results-${{ runner.os }}-${{ matrix.python-version }}.xml
+        python -m pytest . -v --cov=kaggle_cassava --junitxml=junit/test-results-${{ runner.os }}-${{ matrix.python-version }}.xml
 
     - name: Upload pytest test results
       uses: actions/upload-artifact@v2

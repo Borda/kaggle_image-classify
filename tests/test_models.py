@@ -1,4 +1,4 @@
-from cldc.models import LitCassava, LitMobileNet, LitResnet
+from kaggle_cassava.models import LitCassava, LitMobileNet, LitResnet
 
 
 def test_create_resnet():

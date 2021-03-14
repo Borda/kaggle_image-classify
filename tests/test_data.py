@@ -2,7 +2,7 @@ import os
 
 import numpy
 
-from cldc.data import CassavaDataModule, CassavaDataset
+from kaggle_cassava.data import CassavaDataModule, CassavaDataset
 
 _PATH_HERE = os.path.dirname(__file__)
 

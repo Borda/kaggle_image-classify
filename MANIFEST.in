@@ -1,0 +1,7 @@
+include *.py
+include *.txt
+recursive-include assets *.jpg
+
+exclude *.yml
+prune notebooks
+prune tests
