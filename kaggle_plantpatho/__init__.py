@@ -1,7 +1,7 @@
 import os
 
-__version__ = "0.0.0"
-__docs__ = "Tooling for Kaggle ..."
+__version__ = "0.1.0dev"
+__docs__ = "Tooling for Kaggle Plant Pathology"
 __author__ = "Jiri Borovec"
 __author_email__ = "jirka@pytorchlightning.ai"
 __homepage__ = "https://github.com/Borda/kaggle_plant-pathology"

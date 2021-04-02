@@ -1,1 +1,7 @@
 torch>=1.6
+torchmetrics>=0.2.0
+torchvision
+pytorch-lightning>=1.2.0
+pandas
+matplotlib
+Pillow
