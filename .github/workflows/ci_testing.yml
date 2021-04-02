@@ -51,7 +51,7 @@ jobs:
 
     - name: Tests
       run: |
-        python -m pytest . -v --cov=challenge_xyz --junitxml=junit/test-results-${{ runner.os }}-${{ matrix.python-version }}.xml
+        python -m pytest . -v --cov=kaggle_plantpatho --junitxml=junit/test-results-${{ runner.os }}-${{ matrix.python-version }}.xml
 
     - name: Upload pytest test results
       uses: actions/upload-artifact@v2
