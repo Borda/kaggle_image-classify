@@ -1,6 +1,7 @@
 import itertools
 import multiprocessing as mproc
 import os
+from typing import Tuple
 
 import matplotlib.pyplot as plt
 import pandas as pd
@@ -40,14 +41,18 @@ class PlantPathologyDataset(Dataset):
         transforms=None,
         mode: str = 'train',
         split: float = 0.8,
+        uq_labels: Tuple[str] = None,
     ):
         self.path_img_dir = path_img_dir
         self.transforms = transforms
         self.mode = mode
 
         self.data = pd.read_csv(path_csv)
-        labels_all = list(itertools.chain(*[lbs.split(" ") for lbs in self.data['labels']]))
-        self.labels_unique = sorted(set(labels_all))
+        if uq_labels:
+            self.labels_unique = uq_labels
+        else:
+            labels_all = list(itertools.chain(*[lbs.split(" ") for lbs in self.data['labels']]))
+            self.labels_unique = sorted(set(labels_all))
         self.labels_lut = {lb: i for i, lb in enumerate(self.labels_unique)}
         self.num_classes = len(self.labels_unique)
         # shuffle data
@@ -102,7 +107,7 @@ class PlantPathologyDM(LightningDataModule):
         path_img_dir: str = 'train_images',
         batch_size: int = 128,
         num_workers: int = None,
-        full: bool = False,
+        simple: bool = False,
     ):
         super().__init__()
         self.path_csv = path_csv
@@ -111,7 +116,7 @@ class PlantPathologyDM(LightningDataModule):
         self.num_workers = num_workers if num_workers is not None else mproc.cpu_count()
         self.train_dataset = None
         self.valid_dataset = None
-        self.dataset_cls = PlantPathologyDataset if full else PlantPathologySimpleDataset
+        self.dataset_cls = PlantPathologySimpleDataset if simple else PlantPathologyDataset
 
     def prepare_data(self):
         pass
@@ -122,12 +127,13 @@ class PlantPathologyDM(LightningDataModule):
         return max(self.train_dataset.num_classes, self.valid_dataset.num_classes)
 
     def setup(self, stage=None):
+        ds = self.dataset_cls(self.path_csv, self.path_img_dir, mode='train', split=1.0)
         self.train_dataset = self.dataset_cls(
-            self.path_csv, self.path_img_dir, mode='train', transforms=TRAIN_TRANSFORM
+            self.path_csv, self.path_img_dir, mode='train', uq_labels=ds.labels_unique, transforms=TRAIN_TRANSFORM
         )
         print(f"training dataset: {len(self.train_dataset)}")
         self.valid_dataset = self.dataset_cls(
-            self.path_csv, self.path_img_dir, mode='valid', transforms=VALID_TRANSFORM
+            self.path_csv, self.path_img_dir, mode='valid', uq_labels=ds.labels_unique, transforms=VALID_TRANSFORM
         )
         print(f"validation dataset: {len(self.valid_dataset)}")
 
