@@ -22,6 +22,7 @@ A simple way how to use this basic functions:
 ### run notebooks in Colab
 
 * [Plant pathology with Lightning](https://colab.research.google.com/github/Borda/kaggle_plant-pathology/blob/main/notebooks/Plant-Pathology-with-Lightning.ipynb)
+* [Plant pathology with Flash](https://colab.research.google.com/github/Borda/kaggle_plant-pathology/blob/main/notebooks/Plant-Pathology-with-Flash.ipynb)
 
 I would recommend uploading the dataset to you personal gDrive and then in notebooks connect the gDrive which saves you lost of time with re-uploading dataset when ever your Colab is reset... :]
 
