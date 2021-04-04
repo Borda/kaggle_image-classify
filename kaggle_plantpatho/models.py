@@ -21,6 +21,9 @@ class LitResnet(nn.Module):
 
 
 class LitPlantPathology(LightningModule):
+    """
+    This model is meant and tested to be used together with `PlantPathologySimpleDataset`
+    """
 
     def __init__(self, model, lr: float = 1e-4):
         super().__init__()
@@ -33,13 +36,24 @@ class LitPlantPathology(LightningModule):
         self.learn_rate = lr
         self.loss_fn = F.cross_entropy
 
+    def on_epoch_start(self):
+        if self.trainer.current_epoch < 2:
+            return
+        for param in self.model.parameters():
+            param.requires_grad = True
+        self.model.train()
+        # print("UNFREEZE")
+
     def forward(self, x):
         return F.softmax(self.model(x))
+
+    def compute_loss(self, y_hat, y):
+        return self.loss_fn(y_hat, y)
 
     def training_step(self, batch, batch_idx):
         x, y = batch
         y_hat = self(x)
-        loss = self.loss_fn(y_hat, y)
+        loss = self.compute_loss(y_hat, y)
         self.log("train_loss", loss, prog_bar=True)
         self.log("train_acc", self.train_accuracy(y_hat, y), prog_bar=False)
         return loss
@@ -47,7 +61,7 @@ class LitPlantPathology(LightningModule):
     def validation_step(self, batch, batch_idx):
         x, y = batch
         y_hat = self(x)
-        loss = self.loss_fn(y_hat, y)
+        loss = self.compute_loss(y_hat, y)
         self.log("valid_loss", loss, prog_bar=False)
         self.log("valid_acc", self.val_accuracy(y_hat, y), prog_bar=True)
         self.log("valid_f1", self.val_f1_score(y_hat, y), prog_bar=True)
@@ -56,3 +70,16 @@ class LitPlantPathology(LightningModule):
         optimizer = torch.optim.AdamW(self.model.parameters(), lr=self.learn_rate)
         scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, self.trainer.max_epochs, 0)
         return [optimizer], [scheduler]
+
+
+class MultiPlantPathology(LitPlantPathology):
+    """
+    This model is meant and tested to be used together with `PlantPathologyDataset`
+    """
+
+    def __init__(self, model, lr: float = 1e-4):
+        super().__init__(model, lr)
+        self.loss = nn.BCEWithLogitsLoss()
+
+    def compute_loss(self, y_hat, y):
+        return self.loss(y_hat, y.to(float))
