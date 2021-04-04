@@ -11,6 +11,9 @@ from pytorch_lightning import LightningDataModule
 from torch.utils.data import DataLoader, Dataset
 from torchvision import transforms as T
 
+DATASET_IMAGE_MEAN = (0.48690377, 0.62658835, 0.4078062)
+DATASET_IMAGE_STD = (0.18142496, 0.15883319, 0.19026241)
+
 TRAIN_TRANSFORM = T.Compose([
     T.Resize(512),
     T.RandomPerspective(),
@@ -18,16 +21,16 @@ TRAIN_TRANSFORM = T.Compose([
     T.RandomHorizontalFlip(),
     T.RandomVerticalFlip(),
     T.ToTensor(),
-    T.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225]),
-    # T.Normalize([0.431, 0.498,  0.313], [0.237, 0.239, 0.227]),  # custom
+    # T.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225]),
+    T.Normalize(DATASET_IMAGE_MEAN, DATASET_IMAGE_STD),  # custom
 ])
 
 VALID_TRANSFORM = T.Compose([
     T.Resize(256),
     T.CenterCrop(224),
     T.ToTensor(),
-    T.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225]),
-    # T.Normalize([0.431, 0.498,  0.313], [0.237, 0.239, 0.227]),  # custom
+    # T.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225]),
+    T.Normalize(DATASET_IMAGE_MEAN, DATASET_IMAGE_STD),  # custom
 ])
 
 
@@ -108,12 +111,16 @@ class PlantPathologyDM(LightningDataModule):
         batch_size: int = 128,
         num_workers: int = None,
         simple: bool = False,
+        train_transforms=None,
+        valid_transforms=None,
     ):
         super().__init__()
         self.path_csv = path_csv
         self.path_img_dir = path_img_dir
         self.batch_size = batch_size
         self.num_workers = num_workers if num_workers is not None else mproc.cpu_count()
+        self.train_transforms = train_transforms or TRAIN_TRANSFORM
+        self.valid_transforms = valid_transforms or VALID_TRANSFORM
         self.train_dataset = None
         self.valid_dataset = None
         self.dataset_cls = PlantPathologySimpleDataset if simple else PlantPathologyDataset
@@ -129,11 +136,19 @@ class PlantPathologyDM(LightningDataModule):
     def setup(self, stage=None):
         ds = self.dataset_cls(self.path_csv, self.path_img_dir, mode='train', split=1.0)
         self.train_dataset = self.dataset_cls(
-            self.path_csv, self.path_img_dir, mode='train', uq_labels=ds.labels_unique, transforms=TRAIN_TRANSFORM
+            self.path_csv,
+            self.path_img_dir,
+            mode='train',
+            uq_labels=ds.labels_unique,
+            transforms=self.train_transforms
         )
         print(f"training dataset: {len(self.train_dataset)}")
         self.valid_dataset = self.dataset_cls(
-            self.path_csv, self.path_img_dir, mode='valid', uq_labels=ds.labels_unique, transforms=VALID_TRANSFORM
+            self.path_csv,
+            self.path_img_dir,
+            mode='valid',
+            uq_labels=ds.labels_unique,
+            transforms=self.valid_transforms
         )
         print(f"validation dataset: {len(self.valid_dataset)}")
 
