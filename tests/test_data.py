@@ -38,6 +38,8 @@ def test_datamodule(simple, root_path=_PATH_HERE):
         assert len(lbs)
         break
 
-    for imgs, _ in dm.test_dataloader():
+    for imgs, names in dm.test_dataloader():
         assert len(imgs)
+        assert len(names)
+        assert isinstance(names[0], str)
         break

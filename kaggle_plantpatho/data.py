@@ -86,9 +86,6 @@ class PlantPathologyDataset(Dataset):
         self.labels = list(self.data['labels'])
 
     def to_onehot_encoding(self, labels: str) -> tuple:
-        # shortcut for test dataset / predictions
-        if not labels:
-            return tuple()
         # processed with encoding
         one_hot = [0] * len(self.labels_unique)
         for lb in labels.split(" "):
@@ -96,7 +93,8 @@ class PlantPathologyDataset(Dataset):
         return tuple(one_hot)
 
     def __getitem__(self, idx: int) -> tuple:
-        img_path = os.path.join(self.path_img_dir, self.img_names[idx])
+        img_name = self.img_names[idx]
+        img_path = os.path.join(self.path_img_dir, img_name)
         assert os.path.isfile(img_path)
         label = self.labels[idx]
         img = plt.imread(img_path)
@@ -104,8 +102,9 @@ class PlantPathologyDataset(Dataset):
         # augmentation
         if self.transforms:
             img = self.transforms(Image.fromarray(img))
-        label = self.to_onehot_encoding(label)
-        return img, torch.tensor(label)
+        # in case of predictions, return image name as label
+        label = torch.tensor(self.to_onehot_encoding(label)) if label else img_name
+        return img, label
 
     def __len__(self) -> int:
         return len(self.data)
@@ -117,7 +116,7 @@ class PlantPathologySimpleDataset(PlantPathologyDataset):
     def __getitem__(self, idx: int) -> tuple:
         img, label = super().__getitem__(idx)
         # shortcut for prediction without labels
-        if label.nelement() == 0:
+        if isinstance(label, str):
             return img, label
         # get complex or find the one...
         if torch.sum(label) > 1:
@@ -151,6 +150,7 @@ class PlantPathologyDM(LightningDataModule):
         self.num_workers = num_workers if num_workers is not None else mproc.cpu_count()
         self.train_dataset = None
         self.valid_dataset = None
+        self.test_table = []
         self.test_dataset = None
         self.train_transforms = train_transforms or TRAIN_TRANSFORM
         self.valid_transforms = valid_transforms or VALID_TRANSFORM
@@ -195,9 +195,9 @@ class PlantPathologyDM(LightningDataModule):
             return
         ls_images = glob.glob(os.path.join(self.test_dir, '*.*'))
         ls_images = [os.path.basename(p) for p in ls_images if os.path.splitext(p)[-1] in IMAGE_EXTENSIONS]
-        test_tab = [dict(image=n, labels='') for n in ls_images]
+        self.test_table = [dict(image=n, labels='') for n in ls_images]
         self.test_dataset = self.dataset_cls(
-            df_data=pd.DataFrame(test_tab),
+            df_data=pd.DataFrame(self.test_table),
             path_img_dir=self.test_dir,
             split=0,
             uq_labels=self.labels_unique,
@@ -225,7 +225,7 @@ class PlantPathologyDM(LightningDataModule):
         if self.test_dataset:
             return DataLoader(
                 self.test_dataset,
-                batch_size=1,
+                batch_size=self.batch_size,
                 num_workers=0,
                 shuffle=False,
             )
