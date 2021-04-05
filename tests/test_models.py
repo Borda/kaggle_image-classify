@@ -44,7 +44,8 @@ def test_devel_run(tmpdir, ds_simple, model_cls, root_path=_PATH_HERE):
     trainer.fit(model, datamodule=dm)
 
     # test predictions
-    for imgs, _ in dm.test_dataloader():
-        onehot = model(imgs)
+    for imgs, names in dm.test_dataloader():
+        onehots = model(imgs)
         # it has only batch size 1
-        dm.onehot_to_labels(onehot[0])
+        for oh, name in zip(onehots, names):
+            dm.onehot_to_labels(oh)
