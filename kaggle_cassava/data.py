@@ -78,12 +78,16 @@ class CassavaDataModule(LightningDataModule):
         path_img_dir: str = "/content/train_images/",
         train_augment=TRAIN_TRANSFORM,
         valid_augment=VALID_TRANSFORM,
+        batch_size: int = 128,
+        split: float = 0.8,
     ):
         super().__init__()
         self.path_csv = path_csv
         self.path_img_dir = path_img_dir
         self.train_augment = train_augment
         self.valid_augment = valid_augment
+        self.batch_size = batch_size
+        self.split = split
 
     def prepare_data(self):
         pass
@@ -92,6 +96,7 @@ class CassavaDataModule(LightningDataModule):
         self.train_dataset = CassavaDataset(
             self.path_csv,
             self.path_img_dir,
+            split=self.split,
             mode='train',
             transforms=self.train_augment,
         )
@@ -99,6 +104,7 @@ class CassavaDataModule(LightningDataModule):
         self.valid_dataset = CassavaDataset(
             self.path_csv,
             self.path_img_dir,
+            split=self.split,
             mode='valid',
             transforms=self.valid_augment,
         )
@@ -107,7 +113,7 @@ class CassavaDataModule(LightningDataModule):
     def train_dataloader(self):
         return DataLoader(
             self.train_dataset,
-            batch_size=128,
+            batch_size=self.batch_size,
             num_workers=mproc.cpu_count(),
             shuffle=True,
         )
@@ -115,7 +121,7 @@ class CassavaDataModule(LightningDataModule):
     def val_dataloader(self):
         return DataLoader(
             self.valid_dataset,
-            batch_size=128,
+            batch_size=self.batch_size,
             num_workers=mproc.cpu_count(),
             shuffle=False,
         )
