@@ -2,6 +2,7 @@
 
 ![CI complete testing](https://github.com/Borda/kaggle_plant-pathology/workflows/CI%20complete%20testing/badge.svg?branch=main&event=push)
 [![Code formatting](https://github.com/Borda/kaggle_plant-pathology/actions/workflows/code-format.yml/badge.svg?branch=main&event=push)](https://github.com/Borda/kaggle_plant-pathology/actions/workflows/code-format.yml)
+[![codecov](https://codecov.io/gh/Borda/kaggle_plant-pathology/branch/main/graph/badge.svg)](https://codecov.io/gh/Borda/kaggle_plant-pathology)
 
 
 Foliar (leaf) diseases pose a major threat to the overall productivity and quality of apple orchards.
