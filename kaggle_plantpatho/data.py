@@ -168,6 +168,9 @@ class PlantPathologyDM(LightningDataModule):
 
     def onehot_to_labels(self, onehot, thr: float = 0.5):
         assert self.lut_label
+        # on case it is not one hot encoding but single label
+        if onehot.nelement() == 1:
+            self.lut_label[onehot[0]]
         labels = [self.lut_label[i] for i, s in enumerate(onehot) if s > thr]
         return sorted(labels)
 

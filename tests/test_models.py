@@ -46,4 +46,5 @@ def test_devel_run(tmpdir, ds_simple, model_cls, root_path=_PATH_HERE):
     # test predictions
     for imgs, _ in dm.test_dataloader():
         onehot = model(imgs)
-        dm.onehot_to_labels(onehot)
+        # it has only batch size 1
+        dm.onehot_to_labels(onehot[0])
