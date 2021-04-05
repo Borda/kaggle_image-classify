@@ -80,8 +80,8 @@ class MultiPlantPathology(LitPlantPathology):
         super().__init__(model, lr)
         self.loss = nn.BCEWithLogitsLoss()
 
-    # def forward(self, x):
-    #     return F.log_softmax(self.model(x), dim=1)
+    def forward(self, x):
+        return F.sigmoid(self.model(x))
 
     def compute_loss(self, y_hat, y):
         return self.loss(y_hat, y.to(float))
