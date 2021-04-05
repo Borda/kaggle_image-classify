@@ -27,7 +27,7 @@ def test_devel_run(tmpdir, ds_simple, model_cls, root_path=_PATH_HERE):
     """Sample fast dev run..."""
     dm = PlantPathologyDM(
         path_csv=os.path.join(root_path, "data", "train.csv"),
-        path_img_dir=os.path.join(root_path, "data", "train_images"),
+        base_path=os.path.join(root_path, "data"),
         simple=ds_simple,
         batch_size=2,
         split=0.6,
@@ -36,8 +36,16 @@ def test_devel_run(tmpdir, ds_simple, model_cls, root_path=_PATH_HERE):
     net = LitResnet(arch='resnet18', num_classes=dm.num_classes)
     model = model_cls(model=net)
 
+    # smoke run
     trainer = Trainer(
         default_root_dir=tmpdir,
         fast_dev_run=True,
     )
     trainer.fit(model, datamodule=dm)
+
+    # test predictions
+    for imgs, names in dm.test_dataloader():
+        onehots = model(imgs)
+        # it has only batch size 1
+        for oh, name in zip(onehots, names):
+            dm.onehot_to_labels(oh)

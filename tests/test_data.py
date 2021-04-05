@@ -11,7 +11,7 @@ _PATH_HERE = os.path.dirname(__file__)
 @pytest.mark.parametrize("data_cls", [PlantPathologyDataset, PlantPathologySimpleDataset])
 def test_dataset(data_cls, root_path=_PATH_HERE):
     dataset = PlantPathologyDataset(
-        path_csv=os.path.join(root_path, "data", "train.csv"),
+        df_data=os.path.join(root_path, "data", "train.csv"),
         path_img_dir=os.path.join(root_path, "data", "train_images")
     )
     img, lb = dataset[0]
@@ -22,12 +22,24 @@ def test_dataset(data_cls, root_path=_PATH_HERE):
 def test_datamodule(simple, root_path=_PATH_HERE):
     dm = PlantPathologyDM(
         path_csv=os.path.join(root_path, "data", "train.csv"),
-        path_img_dir=os.path.join(root_path, "data", "train_images"),
+        base_path=os.path.join(root_path, "data"),
         simple=simple,
+        split=0.6,
     )
     dm.setup()
 
     for imgs, lbs in dm.train_dataloader():
         assert len(imgs)
         assert len(lbs)
+        break
+
+    for imgs, lbs in dm.val_dataloader():
+        assert len(imgs)
+        assert len(lbs)
+        break
+
+    for imgs, names in dm.test_dataloader():
+        assert len(imgs)
+        assert len(names)
+        assert isinstance(names[0], str)
         break
