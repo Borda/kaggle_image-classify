@@ -3,7 +3,7 @@ import itertools
 import logging
 import multiprocessing as mproc
 import os
-from typing import Tuple, Type
+from typing import Tuple, Type, Union
 
 import matplotlib.pyplot as plt
 import pandas as pd
@@ -45,7 +45,7 @@ class PlantPathologyDataset(Dataset):
 
     def __init__(
         self,
-        path_csv: str = 'train.csv',
+        df_data: Union[str, pd.DataFrame] = 'train.csv',
         path_img_dir: str = 'train_images',
         transforms=None,
         mode: str = 'train',
@@ -57,7 +57,16 @@ class PlantPathologyDataset(Dataset):
         self.transforms = transforms
         self.mode = mode
 
-        self.data = pd.read_csv(path_csv)
+        # set or load the config table
+        if isinstance(df_data, pd.DataFrame):
+            self.data = df_data
+        elif isinstance(df_data, str):
+            assert os.path.isfile(df_data), f"missing file: {df_data}"
+            self.data = pd.read_csv(df_data)
+        else:
+            raise ValueError(f'unrecognised input for DataFrame/CSV: {df_data}')
+
+        # take over existing table or load from file
         if uq_labels:
             self.labels_unique = uq_labels
         else:
@@ -65,6 +74,7 @@ class PlantPathologyDataset(Dataset):
             self.labels_unique = sorted(set(labels_all))
         self.labels_lut = {lb: i for i, lb in enumerate(self.labels_unique)}
         self.num_classes = len(self.labels_unique)
+
         # shuffle data
         self.data = self.data.sample(frac=1, random_state=random_state).reset_index(drop=True)
 
@@ -75,7 +85,11 @@ class PlantPathologyDataset(Dataset):
         self.img_names = list(self.data['image'])
         self.labels = list(self.data['labels'])
 
-    def to_one_hot(self, labels: str) -> tuple:
+    def to_onehot_encoding(self, labels: str) -> tuple:
+        # shortcut for test dataset / predictions
+        if not labels:
+            return tuple()
+        # processed with encoding
         one_hot = [0] * len(self.labels_unique)
         for lb in labels.split(" "):
             one_hot[self.labels_lut[lb]] = 1
@@ -90,7 +104,7 @@ class PlantPathologyDataset(Dataset):
         # augmentation
         if self.transforms:
             img = self.transforms(Image.fromarray(img))
-        label = self.to_one_hot(label)
+        label = self.to_onehot_encoding(label)
         return img, torch.tensor(label)
 
     def __len__(self) -> int:
@@ -102,6 +116,10 @@ class PlantPathologySimpleDataset(PlantPathologyDataset):
 
     def __getitem__(self, idx: int) -> tuple:
         img, label = super().__getitem__(idx)
+        # shortcut for prediction without labels
+        if label.nelement() == 0:
+            return img, label
+        # get complex or find the one...
         if torch.sum(label) > 1:
             label = self.labels_lut['complex']
         else:
@@ -137,6 +155,8 @@ class PlantPathologyDM(LightningDataModule):
         self.train_transforms = train_transforms or TRAIN_TRANSFORM
         self.valid_transforms = valid_transforms or VALID_TRANSFORM
         self.dataset_cls: Type = PlantPathologySimpleDataset if simple else PlantPathologyDataset
+        self.labels_unique = None
+        self.lut_label = None
 
     def prepare_data(self):
         pass
@@ -146,14 +166,22 @@ class PlantPathologyDM(LightningDataModule):
         assert self.train_dataset and self.valid_dataset
         return max(self.train_dataset.num_classes, self.valid_dataset.num_classes)
 
+    def onehot_to_labels(self, onehot, thr: float = 0.5):
+        assert self.lut_label
+        labels = [self.lut_label[i] for i, s in enumerate(onehot) if s > thr]
+        return sorted(labels)
+
     def setup(self, *_, **__):
         assert os.path.isdir(self.train_dir), f"missing folder: {self.train_dir}"
         ds = self.dataset_cls(self.path_csv, self.train_dir, mode='train', split=1.0)
+        self.labels_unique = ds.labels_unique
+        self.lut_label = dict(enumerate(self.labels_unique))
+
         ds_defaults = dict(
-            path_csv=self.path_csv,
+            df_data=self.path_csv,
             path_img_dir=self.train_dir,
             split=self.split,
-            uq_labels=ds.labels_unique,
+            uq_labels=self.labels_unique,
         )
         self.train_dataset = self.dataset_cls(**ds_defaults, mode='train', transforms=self.train_transforms)
         logging.info(f"training dataset: {len(self.train_dataset)}")
@@ -166,12 +194,12 @@ class PlantPathologyDM(LightningDataModule):
         ls_images = [os.path.basename(p) for p in ls_images if os.path.splitext(p)[-1] in IMAGE_EXTENSIONS]
         test_tab = [dict(image=n, labels='') for n in ls_images]
         self.test_dataset = self.dataset_cls(
-            path_csv=pd.DataFrame(test_tab),
+            df_data=pd.DataFrame(test_tab),
             path_img_dir=self.test_dir,
             split=0,
-            uq_labels=ds.labels_unique,
-            mode='valid',
-            transforms=self.valid_dataset
+            uq_labels=self.labels_unique,
+            mode='test',
+            transforms=self.valid_transforms
         )
 
     def train_dataloader(self):
