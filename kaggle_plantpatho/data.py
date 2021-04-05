@@ -1,7 +1,7 @@
 import itertools
 import multiprocessing as mproc
 import os
-from typing import Tuple
+from typing import Tuple, Type
 
 import matplotlib.pyplot as plt
 import pandas as pd
@@ -113,6 +113,7 @@ class PlantPathologyDM(LightningDataModule):
         simple: bool = False,
         train_transforms=None,
         valid_transforms=None,
+        split: float = 0.8,
     ):
         super().__init__()
         self.path_csv = path_csv
@@ -123,7 +124,8 @@ class PlantPathologyDM(LightningDataModule):
         self.valid_transforms = valid_transforms or VALID_TRANSFORM
         self.train_dataset = None
         self.valid_dataset = None
-        self.dataset_cls = PlantPathologySimpleDataset if simple else PlantPathologyDataset
+        self.dataset_cls: Type = PlantPathologySimpleDataset if simple else PlantPathologyDataset
+        self.split = split
 
     def prepare_data(self):
         pass
@@ -138,6 +140,7 @@ class PlantPathologyDM(LightningDataModule):
         self.train_dataset = self.dataset_cls(
             self.path_csv,
             self.path_img_dir,
+            split=self.split,
             mode='train',
             uq_labels=ds.labels_unique,
             transforms=self.train_transforms
@@ -146,6 +149,7 @@ class PlantPathologyDM(LightningDataModule):
         self.valid_dataset = self.dataset_cls(
             self.path_csv,
             self.path_img_dir,
+            split=self.split,
             mode='valid',
             uq_labels=ds.labels_unique,
             transforms=self.valid_transforms

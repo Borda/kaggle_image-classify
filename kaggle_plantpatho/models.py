@@ -34,7 +34,6 @@ class LitPlantPathology(LightningModule):
         self.val_accuracy = torchmetrics.Accuracy()
         self.val_f1_score = torchmetrics.F1(self.num_classes)
         self.learn_rate = lr
-        self.loss_fn = F.cross_entropy
 
     def on_epoch_start(self):
         if self.trainer.current_epoch < 2:
@@ -48,7 +47,7 @@ class LitPlantPathology(LightningModule):
         return F.softmax(self.model(x))
 
     def compute_loss(self, y_hat, y):
-        return self.loss_fn(y_hat, y)
+        return F.cross_entropy(y_hat, y)
 
     def training_step(self, batch, batch_idx):
         x, y = batch
@@ -80,6 +79,9 @@ class MultiPlantPathology(LitPlantPathology):
     def __init__(self, model, lr: float = 1e-4):
         super().__init__(model, lr)
         self.loss = nn.BCEWithLogitsLoss()
+
+    # def forward(self, x):
+    #     return F.log_softmax(self.model(x), dim=1)
 
     def compute_loss(self, y_hat, y):
         return self.loss(y_hat, y.to(float))
