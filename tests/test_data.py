@@ -22,7 +22,7 @@ def test_dataset(data_cls, root_path=_PATH_HERE):
 def test_datamodule(simple, root_path=_PATH_HERE):
     dm = PlantPathologyDM(
         path_csv=os.path.join(root_path, "data", "train.csv"),
-        path_img_dir=os.path.join(root_path, "data", "train_images"),
+        base_path=os.path.join(root_path, "data"),
         simple=simple,
     )
     dm.setup()

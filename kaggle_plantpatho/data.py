@@ -1,4 +1,6 @@
+import glob
 import itertools
+import logging
 import multiprocessing as mproc
 import os
 from typing import Tuple, Type
@@ -11,9 +13,11 @@ from pytorch_lightning import LightningDataModule
 from torch.utils.data import DataLoader, Dataset
 from torchvision import transforms as T
 
+#: computed color mean from given dataset
 DATASET_IMAGE_MEAN = (0.48690377, 0.62658835, 0.4078062)
+#: computed color STD from given dataset
 DATASET_IMAGE_STD = (0.18142496, 0.15883319, 0.19026241)
-
+#: default training augmentation
 TRAIN_TRANSFORM = T.Compose([
     T.Resize(512),
     T.RandomPerspective(),
@@ -24,7 +28,7 @@ TRAIN_TRANSFORM = T.Compose([
     # T.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225]),
     T.Normalize(DATASET_IMAGE_MEAN, DATASET_IMAGE_STD),  # custom
 ])
-
+#: default validation augmentation
 VALID_TRANSFORM = T.Compose([
     T.Resize(256),
     T.CenterCrop(224),
@@ -32,6 +36,8 @@ VALID_TRANSFORM = T.Compose([
     # T.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225]),
     T.Normalize(DATASET_IMAGE_MEAN, DATASET_IMAGE_STD),  # custom
 ])
+#: feasible image extension for testing
+IMAGE_EXTENSIONS = ('.png', '.jpg', '.jpeg')
 
 
 class PlantPathologyDataset(Dataset):
@@ -45,6 +51,7 @@ class PlantPathologyDataset(Dataset):
         mode: str = 'train',
         split: float = 0.8,
         uq_labels: Tuple[str] = None,
+        random_state=42,
     ):
         self.path_img_dir = path_img_dir
         self.transforms = transforms
@@ -59,10 +66,10 @@ class PlantPathologyDataset(Dataset):
         self.labels_lut = {lb: i for i, lb in enumerate(self.labels_unique)}
         self.num_classes = len(self.labels_unique)
         # shuffle data
-        self.data = self.data.sample(frac=1, random_state=42).reset_index(drop=True)
+        self.data = self.data.sample(frac=1, random_state=random_state).reset_index(drop=True)
 
         # split dataset
-        assert 0.0 <= split <= 1.0
+        assert 0.0 <= split <= 1.0, f"split {split} is out of range"
         frac = int(split * len(self.data))
         self.data = self.data[:frac] if mode == 'train' else self.data[frac:]
         self.img_names = list(self.data['image'])
@@ -107,7 +114,7 @@ class PlantPathologyDM(LightningDataModule):
     def __init__(
         self,
         path_csv: str = 'train.csv',
-        path_img_dir: str = 'train_images',
+        base_path: str = '.',
         batch_size: int = 128,
         num_workers: int = None,
         simple: bool = False,
@@ -116,16 +123,20 @@ class PlantPathologyDM(LightningDataModule):
         split: float = 0.8,
     ):
         super().__init__()
+        assert os.path.isfile(path_csv), f"missing table: {path_csv}"
         self.path_csv = path_csv
-        self.path_img_dir = path_img_dir
+        assert os.path.isdir(base_path), f"missing folder: {base_path}"
+        self.train_dir = os.path.join(base_path, 'train_images')
+        self.test_dir = os.path.join(base_path, 'test_images')
         self.batch_size = batch_size
+        self.split = split
         self.num_workers = num_workers if num_workers is not None else mproc.cpu_count()
-        self.train_transforms = train_transforms or TRAIN_TRANSFORM
-        self.valid_transforms = valid_transforms or VALID_TRANSFORM
         self.train_dataset = None
         self.valid_dataset = None
+        self.test_dataset = None
+        self.train_transforms = train_transforms or TRAIN_TRANSFORM
+        self.valid_transforms = valid_transforms or VALID_TRANSFORM
         self.dataset_cls: Type = PlantPathologySimpleDataset if simple else PlantPathologyDataset
-        self.split = split
 
     def prepare_data(self):
         pass
@@ -135,26 +146,33 @@ class PlantPathologyDM(LightningDataModule):
         assert self.train_dataset and self.valid_dataset
         return max(self.train_dataset.num_classes, self.valid_dataset.num_classes)
 
-    def setup(self, stage=None):
-        ds = self.dataset_cls(self.path_csv, self.path_img_dir, mode='train', split=1.0)
-        self.train_dataset = self.dataset_cls(
-            self.path_csv,
-            self.path_img_dir,
+    def setup(self, *_, **__):
+        assert os.path.isdir(self.train_dir), f"missing folder: {self.train_dir}"
+        ds = self.dataset_cls(self.path_csv, self.train_dir, mode='train', split=1.0)
+        ds_defaults = dict(
+            path_csv=self.path_csv,
+            path_img_dir=self.train_dir,
             split=self.split,
-            mode='train',
             uq_labels=ds.labels_unique,
-            transforms=self.train_transforms
         )
-        print(f"training dataset: {len(self.train_dataset)}")
-        self.valid_dataset = self.dataset_cls(
-            self.path_csv,
-            self.path_img_dir,
-            split=self.split,
+        self.train_dataset = self.dataset_cls(**ds_defaults, mode='train', transforms=self.train_transforms)
+        logging.info(f"training dataset: {len(self.train_dataset)}")
+        self.valid_dataset = self.dataset_cls(**ds_defaults, mode='valid', transforms=self.valid_transforms)
+        logging.info(f"validation dataset: {len(self.valid_dataset)}")
+
+        if not os.path.isdir(self.test_dir):
+            return
+        ls_images = glob.glob(os.path.join(self.test_dir, '*.*'))
+        ls_images = [os.path.basename(p) for p in ls_images if os.path.splitext(p)[-1] in IMAGE_EXTENSIONS]
+        test_tab = [dict(image=n, labels='') for n in ls_images]
+        self.test_dataset = self.dataset_cls(
+            path_csv=pd.DataFrame(test_tab),
+            path_img_dir=self.test_dir,
+            split=0,
+            uq_labels=ds.labels_unique,
             mode='valid',
-            uq_labels=ds.labels_unique,
-            transforms=self.valid_transforms
+            transforms=self.valid_dataset
         )
-        print(f"validation dataset: {len(self.valid_dataset)}")
 
     def train_dataloader(self):
         return DataLoader(
@@ -173,4 +191,10 @@ class PlantPathologyDM(LightningDataModule):
         )
 
     def test_dataloader(self):
-        pass
+        if self.test_dataset:
+            return DataLoader(
+                self.test_dataset,
+                batch_size=1,
+                num_workers=0,
+                shuffle=False,
+            )
