@@ -35,13 +35,13 @@ class LitPlantPathology(LightningModule):
         self.val_f1_score = torchmetrics.F1(self.num_classes)
         self.learn_rate = lr
 
-    def on_epoch_start(self):
-        if self.trainer.current_epoch < 2:
-            return
-        for param in self.model.parameters():
-            param.requires_grad = True
-        self.model.train()
-        # print("UNFREEZE")
+    # def on_epoch_start(self):
+    #     if self.trainer.current_epoch < 2:
+    #         return
+    #     for param in self.model.parameters():
+    #         param.requires_grad = True
+    #     self.model.train()
+    #     # print("UNFREEZE")
 
     def forward(self, x):
         return F.softmax(self.model(x))

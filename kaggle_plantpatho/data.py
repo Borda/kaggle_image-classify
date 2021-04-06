@@ -10,6 +10,7 @@ import pandas as pd
 import torch
 from PIL import Image
 from pytorch_lightning import LightningDataModule
+from torch import Tensor
 from torch.utils.data import DataLoader, Dataset
 from torchvision import transforms as T
 
@@ -171,15 +172,27 @@ class PlantPathologyDM(LightningDataModule):
         assert self.train_dataset and self.valid_dataset
         return max(self.train_dataset.num_classes, self.valid_dataset.num_classes)
 
-    def onehot_to_labels(self, onehot, thr: float = 0.5) -> Union[str, List[str]]:
+    def onehot_to_labels(self, onehot: Tensor, thr: float = 0.5, label_required: bool = True) -> Union[str, List[str]]:
+        """Convert Model outputs to string labels
+
+        Args:
+            onehot: one-hot encoding
+            thr: threshold for label binarization
+            label_required: if it is required to return any label and no label is above `thr`, use argmax
+        """
         assert self.lut_label
         # on case it is not one hot encoding but single label
         if onehot.nelement() == 1:
             return self.lut_label[onehot[0]]
-        labels = [self.lut_label[i] for i, s in enumerate(onehot) if s > thr]
+        labels = [self.lut_label[i] for i, s in enumerate(onehot) if s >= thr]
+        # in case no reached threshold then take max
+        if not labels and label_required:
+            idx = torch.argmax(onehot).item()
+            labels = [self.lut_label[idx]]
         return sorted(labels)
 
     def setup(self, *_, **__) -> None:
+        """Prepare datasets"""
         assert os.path.isdir(self.train_dir), f"missing folder: {self.train_dir}"
         ds = self.dataset_cls(self.path_csv, self.train_dir, mode='train', split=1.0)
         self.labels_unique = ds.labels_unique
