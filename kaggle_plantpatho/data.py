@@ -3,7 +3,7 @@ import itertools
 import logging
 import multiprocessing as mproc
 import os
-from typing import Tuple, Type, Union
+from typing import Dict, List, Optional, Sequence, Tuple, Type, Union
 
 import matplotlib.pyplot as plt
 import pandas as pd
@@ -140,14 +140,21 @@ class PlantPathologyDM(LightningDataModule):
         split: float = 0.8,
     ):
         super().__init__()
+        # path configurations
         assert os.path.isfile(path_csv), f"missing table: {path_csv}"
         self.path_csv = path_csv
         assert os.path.isdir(base_path), f"missing folder: {base_path}"
         self.train_dir = os.path.join(base_path, 'train_images')
         self.test_dir = os.path.join(base_path, 'test_images')
+
+        # other configs
         self.batch_size = batch_size
         self.split = split
         self.num_workers = num_workers if num_workers is not None else mproc.cpu_count()
+        self.labels_unique: Sequence = ...
+        self.lut_label: Dict = ...
+
+        # need to be filled in setup()
         self.train_dataset = None
         self.valid_dataset = None
         self.test_table = []
@@ -155,8 +162,6 @@ class PlantPathologyDM(LightningDataModule):
         self.train_transforms = train_transforms or TRAIN_TRANSFORM
         self.valid_transforms = valid_transforms or VALID_TRANSFORM
         self.dataset_cls: Type = PlantPathologySimpleDataset if simple else PlantPathologyDataset
-        self.labels_unique = None
-        self.lut_label = None
 
     def prepare_data(self):
         pass
@@ -166,15 +171,15 @@ class PlantPathologyDM(LightningDataModule):
         assert self.train_dataset and self.valid_dataset
         return max(self.train_dataset.num_classes, self.valid_dataset.num_classes)
 
-    def onehot_to_labels(self, onehot, thr: float = 0.5):
+    def onehot_to_labels(self, onehot, thr: float = 0.5) -> Union[str, List[str]]:
         assert self.lut_label
         # on case it is not one hot encoding but single label
         if onehot.nelement() == 1:
-            self.lut_label[onehot[0]]
+            return self.lut_label[onehot[0]]
         labels = [self.lut_label[i] for i, s in enumerate(onehot) if s > thr]
         return sorted(labels)
 
-    def setup(self, *_, **__):
+    def setup(self, *_, **__) -> None:
         assert os.path.isdir(self.train_dir), f"missing folder: {self.train_dir}"
         ds = self.dataset_cls(self.path_csv, self.train_dir, mode='train', split=1.0)
         self.labels_unique = ds.labels_unique
@@ -204,8 +209,9 @@ class PlantPathologyDM(LightningDataModule):
             mode='test',
             transforms=self.valid_transforms
         )
+        logging.info(f"test dataset: {len(self.test_dataset)}")
 
-    def train_dataloader(self):
+    def train_dataloader(self) -> DataLoader:
         return DataLoader(
             self.train_dataset,
             batch_size=self.batch_size,
@@ -213,7 +219,7 @@ class PlantPathologyDM(LightningDataModule):
             shuffle=True,
         )
 
-    def val_dataloader(self):
+    def val_dataloader(self) -> DataLoader:
         return DataLoader(
             self.valid_dataset,
             batch_size=self.batch_size,
@@ -221,7 +227,7 @@ class PlantPathologyDM(LightningDataModule):
             shuffle=False,
         )
 
-    def test_dataloader(self):
+    def test_dataloader(self) -> Optional[DataLoader]:
         if self.test_dataset:
             return DataLoader(
                 self.test_dataset,
@@ -229,3 +235,4 @@ class PlantPathologyDM(LightningDataModule):
                 num_workers=0,
                 shuffle=False,
             )
+        logging.warning('no testing images found')
