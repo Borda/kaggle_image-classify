@@ -32,7 +32,7 @@ class LitPlantPathology(LightningModule):
         self.num_classes = self.model.num_classes
         self.train_accuracy = torchmetrics.Accuracy()
         self.val_accuracy = torchmetrics.Accuracy()
-        self.val_f1_score = torchmetrics.F1(self.num_classes)
+        self.val_f1_score = torchmetrics.F1(self.num_classes, average='weighted')
         self.learn_rate = lr
 
     # def on_epoch_start(self):
@@ -78,6 +78,7 @@ class MultiPlantPathology(LitPlantPathology):
 
     def __init__(self, model, lr: float = 1e-4):
         super().__init__(model, lr)
+        self.val_f1_score = torchmetrics.F1(self.num_classes, multilabel=True, average='weighted')
         self.loss = nn.BCEWithLogitsLoss()
 
     def forward(self, x):
