@@ -13,6 +13,7 @@ from pytorch_lightning import LightningDataModule
 from torch import Tensor
 from torch.utils.data import DataLoader, Dataset
 from torchvision import transforms as T
+from torchvision.transforms import InterpolationMode
 
 #: computed color mean from given dataset
 DATASET_IMAGE_MEAN = (0.48690377, 0.62658835, 0.4078062)
@@ -20,19 +21,21 @@ DATASET_IMAGE_MEAN = (0.48690377, 0.62658835, 0.4078062)
 DATASET_IMAGE_STD = (0.18142496, 0.15883319, 0.19026241)
 #: default training augmentation
 TRAIN_TRANSFORM = T.Compose([
-    T.Resize(512),
-    T.RandomPerspective(),
-    T.RandomResizedCrop(224),
-    T.RandomHorizontalFlip(),
-    T.RandomVerticalFlip(),
+    T.Resize(size=512, interpolation=InterpolationMode.NEAREST),
+    T.RandomRotation(degrees=30),
+    T.RandomPerspective(distortion_scale=0.4),
+    T.RandomResizedCrop(size=224),
+    T.RandomHorizontalFlip(p=0.5),
+    T.RandomVerticalFlip(p=0.5),
+    T.ColorJitter(brightness=0.05, contrast=0.05, saturation=0.05, hue=0.05),
     T.ToTensor(),
     # T.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225]),
     T.Normalize(DATASET_IMAGE_MEAN, DATASET_IMAGE_STD),  # custom
 ])
 #: default validation augmentation
 VALID_TRANSFORM = T.Compose([
-    T.Resize(256),
-    T.CenterCrop(224),
+    T.Resize(size=320, interpolation=InterpolationMode.NEAREST),
+    T.CenterCrop(size=224),
     T.ToTensor(),
     # T.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225]),
     T.Normalize(DATASET_IMAGE_MEAN, DATASET_IMAGE_STD),  # custom
@@ -142,11 +145,14 @@ class PlantPathologyDM(LightningDataModule):
     ):
         super().__init__()
         # path configurations
-        assert os.path.isfile(path_csv), f"missing table: {path_csv}"
-        self.path_csv = path_csv
         assert os.path.isdir(base_path), f"missing folder: {base_path}"
         self.train_dir = os.path.join(base_path, 'train_images')
         self.test_dir = os.path.join(base_path, 'test_images')
+
+        if not os.path.isfile(path_csv):
+            path_csv = os.path.join(base_path, path_csv)
+        assert os.path.isfile(path_csv), f"missing table: {path_csv}"
+        self.path_csv = path_csv
 
         # other configs
         self.batch_size = batch_size
