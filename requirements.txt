@@ -6,3 +6,6 @@ pandas
 matplotlib
 Pillow
 seaborn
+
+# extra
+https://github.com/Borda/imbalanced-dataset-sampler/archive/refs/heads/master.zip

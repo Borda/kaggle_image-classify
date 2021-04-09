@@ -80,10 +80,10 @@ class MultiPlantPathology(LitPlantPathology):
     This model is meant and tested to be used together with `PlantPathologyDataset`
     """
 
-    def __init__(self, model, lr: float = 1e-4, loss_weight: Optional[Tensor] = None):
+    def __init__(self, model, lr: float = 1e-4):
         super().__init__(model, lr)
         self.val_f1_score = torchmetrics.F1(self.num_classes, multilabel=True, average='weighted')
-        self.loss = nn.BCEWithLogitsLoss(pos_weight=loss_weight)
+        self.loss = nn.BCEWithLogitsLoss()
 
     def forward(self, x: Tensor) -> Tensor:
         return F.sigmoid(self.model(x))

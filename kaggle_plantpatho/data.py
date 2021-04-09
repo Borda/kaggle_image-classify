@@ -16,6 +16,11 @@ from torch.utils.data import DataLoader, Dataset
 from torchvision import transforms as T
 from torchvision.transforms import InterpolationMode
 
+try:
+    from torchsampler import ImbalancedDatasetSampler
+except ImportError:
+    ImbalancedDatasetSampler = None
+
 #: computed color mean from given dataset
 DATASET_IMAGE_MEAN = (0.48690377, 0.62658835, 0.4078062)
 #: computed color STD from given dataset
@@ -245,11 +250,15 @@ class PlantPathologyDM(LightningDataModule):
         logging.info(f"test dataset: {len(self.test_dataset)}")
 
     def train_dataloader(self) -> DataLoader:
+        if ImbalancedDatasetSampler:
+            dl_kwargs = dict(sampler=ImbalancedDatasetSampler(self.train_dataset))
+
         return DataLoader(
             self.train_dataset,
             batch_size=self.batch_size,
             num_workers=self.num_workers,
             shuffle=True,
+            **dl_kwargs
         )
 
     def val_dataloader(self) -> DataLoader:
