@@ -250,8 +250,11 @@ class PlantPathologyDM(LightningDataModule):
         logging.info(f"test dataset: {len(self.test_dataset)}")
 
     def train_dataloader(self) -> DataLoader:
+        dl_kwargs = dict()
         if ImbalancedDatasetSampler:
-            dl_kwargs = dict(sampler=ImbalancedDatasetSampler(self.train_dataset))
+            dl_kwargs['sampler'] = ImbalancedDatasetSampler(
+                dataset=self.train_dataset, callback_get_label=lambda x: x[1]
+            )
 
         return DataLoader(
             self.train_dataset,
