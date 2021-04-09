@@ -2,6 +2,7 @@ import os
 
 import numpy
 import pytest
+from torch import Tensor
 
 from kaggle_plantpatho.data import PlantPathologyDataset, PlantPathologyDM, PlantPathologySimpleDataset
 
@@ -27,6 +28,9 @@ def test_datamodule(simple, root_path=_PATH_HERE):
         split=0.6,
     )
     dm.setup()
+    assert dm.labels_unique
+    assert dm.lut_label
+    assert isinstance(dm.label_histogram, Tensor)
 
     for imgs, lbs in dm.train_dataloader():
         assert len(imgs)

@@ -94,8 +94,10 @@ class PlantPathologyDataset(Dataset):
     def _prepare_labels(self) -> list:
         return [torch.tensor(self.to_onehot_encoding(lb)) if lb else None for lb in self.raw_labels]
 
+    @property
     def label_histogram(self) -> Tensor:
-        return torch.sum(torch.tensor(self.labels), dim=0)
+        lb_stack = torch.tensor(list(map(tuple, self.labels)))
+        return torch.sum(lb_stack, dim=0)
 
     def to_onehot_encoding(self, labels: str) -> tuple:
         # processed with encoding
@@ -135,6 +137,7 @@ class PlantPathologySimpleDataset(PlantPathologyDataset):
         labels = super()._prepare_labels()
         return list(map(self._translate_labels, labels))
 
+    @property
     def label_histogram(self) -> Tensor:
         return torch.tensor(np.bincount(self.labels))
 
@@ -212,7 +215,7 @@ class PlantPathologyDM(LightningDataModule):
         assert os.path.isdir(self.train_dir), f"missing folder: {self.train_dir}"
         ds = self.dataset_cls(self.path_csv, self.train_dir, mode='train', split=1.0)
         self.labels_unique = ds.labels_unique
-        self.label_histogram = ds.label_histogram()
+        self.label_histogram = ds.label_histogram
         self.lut_label = dict(enumerate(self.labels_unique))
 
         ds_defaults = dict(
