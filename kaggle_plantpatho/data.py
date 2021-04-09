@@ -6,8 +6,8 @@ import os
 from typing import Dict, List, Optional, Sequence, Tuple, Type, Union
 
 import matplotlib.pyplot as plt
-import pandas as pd
 import numpy as np
+import pandas as pd
 import torch
 from PIL import Image
 from pytorch_lightning import LightningDataModule
@@ -72,10 +72,11 @@ class PlantPathologyDataset(Dataset):
             raise ValueError(f'unrecognised input for DataFrame/CSV: {df_data}')
 
         # take over existing table or load from file
+        self.raw_labels = list(self.data['labels'])
         if uq_labels:
             self.labels_unique = uq_labels
         else:
-            labels_all = list(itertools.chain(*[lbs.split(" ") for lbs in self.data['raw_labels']]))
+            labels_all = list(itertools.chain(*[lbs.split(" ") for lbs in self.raw_labels]))
             self.labels_unique = sorted(set(labels_all))
         self.labels_lut = {lb: i for i, lb in enumerate(self.labels_unique)}
         self.num_classes = len(self.labels_unique)
@@ -88,7 +89,6 @@ class PlantPathologyDataset(Dataset):
         frac = int(split * len(self.data))
         self.data = self.data[:frac] if mode == 'train' else self.data[frac:]
         self.img_names = list(self.data['image'])
-        self.raw_labels = list(self.data['raw_labels'])
         self.labels = self._prepare_labels()
 
     def _prepare_labels(self) -> list:
@@ -108,14 +108,14 @@ class PlantPathologyDataset(Dataset):
         img_name = self.img_names[idx]
         img_path = os.path.join(self.path_img_dir, img_name)
         assert os.path.isfile(img_path)
-        label = self.raw_labels[idx]
+        label = self.labels[idx]
         img = plt.imread(img_path)
 
         # augmentation
         if self.transforms:
             img = self.transforms(Image.fromarray(img))
         # in case of predictions, return image name as label
-        label = label or img_name
+        label = label if label is not None else img_name
         return img, label
 
     def __len__(self) -> int:
@@ -126,7 +126,7 @@ class PlantPathologySimpleDataset(PlantPathologyDataset):
     """Simplified version; we keep only complex label for multi-label cases and the true label for all others."""
 
     def _translate_labels(self, lb):
-        if not lb:
+        if lb is None:
             return None
         lb = self.labels_lut['complex'] if torch.sum(lb) > 1 else torch.argmax(lb)
         return int(lb)
