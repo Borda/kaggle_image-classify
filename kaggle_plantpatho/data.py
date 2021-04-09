@@ -7,6 +7,7 @@ from typing import Dict, List, Optional, Sequence, Tuple, Type, Union
 
 import matplotlib.pyplot as plt
 import pandas as pd
+import numpy as np
 import torch
 from PIL import Image
 from pytorch_lightning import LightningDataModule
@@ -74,7 +75,7 @@ class PlantPathologyDataset(Dataset):
         if uq_labels:
             self.labels_unique = uq_labels
         else:
-            labels_all = list(itertools.chain(*[lbs.split(" ") for lbs in self.data['labels']]))
+            labels_all = list(itertools.chain(*[lbs.split(" ") for lbs in self.data['raw_labels']]))
             self.labels_unique = sorted(set(labels_all))
         self.labels_lut = {lb: i for i, lb in enumerate(self.labels_unique)}
         self.num_classes = len(self.labels_unique)
@@ -87,7 +88,14 @@ class PlantPathologyDataset(Dataset):
         frac = int(split * len(self.data))
         self.data = self.data[:frac] if mode == 'train' else self.data[frac:]
         self.img_names = list(self.data['image'])
-        self.labels = list(self.data['labels'])
+        self.raw_labels = list(self.data['raw_labels'])
+        self.labels = self._prepare_labels()
+
+    def _prepare_labels(self) -> list:
+        return [torch.tensor(self.to_onehot_encoding(lb)) if lb else None for lb in self.raw_labels]
+
+    def label_histogram(self) -> Tensor:
+        return torch.sum(torch.tensor(self.labels), dim=0)
 
     def to_onehot_encoding(self, labels: str) -> tuple:
         # processed with encoding
@@ -100,14 +108,14 @@ class PlantPathologyDataset(Dataset):
         img_name = self.img_names[idx]
         img_path = os.path.join(self.path_img_dir, img_name)
         assert os.path.isfile(img_path)
-        label = self.labels[idx]
+        label = self.raw_labels[idx]
         img = plt.imread(img_path)
 
         # augmentation
         if self.transforms:
             img = self.transforms(Image.fromarray(img))
         # in case of predictions, return image name as label
-        label = torch.tensor(self.to_onehot_encoding(label)) if label else img_name
+        label = label or img_name
         return img, label
 
     def __len__(self) -> int:
@@ -117,17 +125,18 @@ class PlantPathologyDataset(Dataset):
 class PlantPathologySimpleDataset(PlantPathologyDataset):
     """Simplified version; we keep only complex label for multi-label cases and the true label for all others."""
 
-    def __getitem__(self, idx: int) -> tuple:
-        img, label = super().__getitem__(idx)
-        # shortcut for prediction without labels
-        if isinstance(label, str):
-            return img, label
-        # get complex or find the one...
-        if torch.sum(label) > 1:
-            label = self.labels_lut['complex']
-        else:
-            label = torch.argmax(label)
-        return img, int(label)
+    def _translate_labels(self, lb):
+        if not lb:
+            return None
+        lb = self.labels_lut['complex'] if torch.sum(lb) > 1 else torch.argmax(lb)
+        return int(lb)
+
+    def _prepare_labels(self) -> list:
+        labels = super()._prepare_labels()
+        return list(map(self._translate_labels, labels))
+
+    def label_histogram(self) -> Tensor:
+        return torch.tensor(np.bincount(self.labels))
 
 
 class PlantPathologyDM(LightningDataModule):
@@ -160,6 +169,7 @@ class PlantPathologyDM(LightningDataModule):
         self.num_workers = num_workers if num_workers is not None else mproc.cpu_count()
         self.labels_unique: Sequence = ...
         self.lut_label: Dict = ...
+        self.label_histogram: Tensor = ...
 
         # need to be filled in setup()
         self.train_dataset = None
@@ -179,7 +189,7 @@ class PlantPathologyDM(LightningDataModule):
         return max(self.train_dataset.num_classes, self.valid_dataset.num_classes)
 
     def onehot_to_labels(self, onehot: Tensor, thr: float = 0.5, label_required: bool = True) -> Union[str, List[str]]:
-        """Convert Model outputs to string labels
+        """Convert Model outputs to string raw_labels
 
         Args:
             onehot: one-hot encoding
@@ -202,6 +212,7 @@ class PlantPathologyDM(LightningDataModule):
         assert os.path.isdir(self.train_dir), f"missing folder: {self.train_dir}"
         ds = self.dataset_cls(self.path_csv, self.train_dir, mode='train', split=1.0)
         self.labels_unique = ds.labels_unique
+        self.label_histogram = ds.label_histogram()
         self.lut_label = dict(enumerate(self.labels_unique))
 
         ds_defaults = dict(
