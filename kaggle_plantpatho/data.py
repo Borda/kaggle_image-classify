@@ -252,7 +252,11 @@ class PlantPathologyDM(LightningDataModule):
     def train_dataloader(self) -> DataLoader:
         dl_kwargs = dict()
         if ImbalancedDatasetSampler:
-            _get_label = lambda dataset, idx: dataset[idx][1]
+            if issubclass(self.dataset_cls, PlantPathologySimpleDataset):
+                _get_label = lambda dataset, idx: dataset[idx][1]
+            else:
+                # todo: take the less orared label, not the tuple combination as combination does not matter too much
+                _get_label = lambda dataset, idx: tuple(dataset[idx][1])
             dl_kwargs['sampler'] = ImbalancedDatasetSampler(
                 dataset=self.train_dataset, callback_get_label=_get_label,
             )
