@@ -7,8 +7,6 @@ from pytorch_lightning import LightningModule
 from torch import nn
 from torch.nn import functional as F
 
-from kaggle_plantpatho.augment import LitAugmenter
-
 
 class LitResnet(nn.Module):
 
