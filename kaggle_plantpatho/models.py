@@ -39,7 +39,7 @@ class LitPlantPathology(LightningModule):
         self.val_accuracy = torchmetrics.Accuracy()
         self.val_f1_score = torchmetrics.F1(self.num_classes, average='weighted')
         self.learn_rate = lr
-        self.aug = augmentations or LitAugmenter()
+        self.aug = augmentations
 
     # def on_epoch_start(self):
     #     if self.trainer.current_epoch < 2:
@@ -57,7 +57,8 @@ class LitPlantPathology(LightningModule):
 
     def training_step(self, batch, batch_idx):
         x, y = batch
-        x = self.aug(x)  # => batched augmentations
+        if self.aug:
+            x = self.aug(x)  # => batched augmentations
         y_hat = self(x)
         loss = self.compute_loss(y_hat, y)
         self.log("train_loss", loss, prog_bar=False)
