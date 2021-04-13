@@ -16,30 +16,37 @@ from torchvision import transforms as T
 from torchvision.transforms import InterpolationMode
 
 #: computed color mean from given dataset
-DATASET_IMAGE_MEAN = (0.48690377, 0.62658835, 0.4078062)
-#: computed color STD from given dataset
-DATASET_IMAGE_STD = (0.18142496, 0.15883319, 0.19026241)
-#: default training augmentation
-TRAIN_TRANSFORM = T.Compose([
-    T.Resize(size=512, interpolation=InterpolationMode.BILINEAR),
-    T.RandomRotation(degrees=30),
-    T.RandomPerspective(distortion_scale=0.4),
-    T.RandomResizedCrop(size=224),
-    T.RandomHorizontalFlip(p=0.5),
-    T.RandomVerticalFlip(p=0.5),
-    # T.ColorJitter(brightness=0.05, contrast=0.05, saturation=0.05, hue=0.05),
-    T.ToTensor(),
-    # T.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225]),
-    T.Normalize(DATASET_IMAGE_MEAN, DATASET_IMAGE_STD),  # custom
-])
-#: default validation augmentation
-VALID_TRANSFORM = T.Compose([
-    T.Resize(size=256, interpolation=InterpolationMode.BILINEAR),
-    T.CenterCrop(size=224),
-    T.ToTensor(),
-    # T.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225]),
-    T.Normalize(DATASET_IMAGE_MEAN, DATASET_IMAGE_STD),  # custom
-])
+#DATASET_IMAGE_MEAN = (0.48690377, 0.62658835, 0.4078062)
+##: computed color STD from given dataset
+#DATASET_IMAGE_STD = (0.18142496, 0.15883319, 0.19026241)
+##: default training augmentation
+#TRAIN_TRANSFORM = T.Compose([
+#    T.Resize(size=512, interpolation=InterpolationMode.BILINEAR),
+#    T.RandomRotation(degrees=30),
+#    T.RandomPerspective(distortion_scale=0.4),
+#    T.RandomResizedCrop(size=224),
+#    T.RandomHorizontalFlip(p=0.5),
+#    T.RandomVerticalFlip(p=0.5),
+#    # T.ColorJitter(brightness=0.05, contrast=0.05, saturation=0.05, hue=0.05),
+#    T.ToTensor(),
+#    # T.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225]),
+#    T.Normalize(DATASET_IMAGE_MEAN, DATASET_IMAGE_STD),  # custom
+#])
+##: default validation augmentation
+#VALID_TRANSFORM = T.Compose([
+#    T.Resize(size=256, interpolation=InterpolationMode.BILINEAR),
+#    T.CenterCrop(size=224),
+#    T.ToTensor(),
+#    # T.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225]),
+#    T.Normalize(DATASET_IMAGE_MEAN, DATASET_IMAGE_STD),  # custom
+#])
+from kaggle_plantpatho.augmenter import LitPreprocess
+TRAIN_PREPROCESS = LitPreprocess(512)
+VALID_PREPROCESS = LitPreprocess(224)
+# RENAME LATER
+TRAIN_TRANSFORM = TRAIN_PREPROCESS
+VALID_TRANSFORM = VALID_PREPROCESS
+
 #: feasible image extension for testing
 IMAGE_EXTENSIONS = ('.png', '.jpg', '.jpeg')
 
