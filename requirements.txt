@@ -1,9 +1,9 @@
 torch>=1.6
 torchmetrics>=0.2.0
-torchvision
 pytorch-lightning>=1.2.0
+torchvision
+kornia>=0.4
 pandas
 matplotlib
 Pillow
 seaborn
-kornia>=0.4
