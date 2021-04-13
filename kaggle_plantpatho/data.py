@@ -12,40 +12,10 @@ from PIL import Image
 from pytorch_lightning import LightningDataModule
 from torch import Tensor
 from torch.utils.data import DataLoader, Dataset
-from torchvision import transforms as T
-from torchvision.transforms import InterpolationMode
-
-from kaggle_plantpatho import DATASET_IMAGE_MEAN, DATASET_IMAGE_STD
-from kaggle_plantpatho.augment import LitPreprocess
-
-#: default training augmentation
-TORCHVISION_TRAIN_TRANSFORM = T.Compose([
-    T.Resize(size=512, interpolation=InterpolationMode.BILINEAR),
-    T.RandomRotation(degrees=30),
-    T.RandomPerspective(distortion_scale=0.4),
-    T.RandomResizedCrop(size=224),
-    T.RandomHorizontalFlip(p=0.5),
-    T.RandomVerticalFlip(p=0.5),
-    # T.ColorJitter(brightness=0.05, contrast=0.05, saturation=0.05, hue=0.05),
-    T.ToTensor(),
-    # T.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225]),
-    T.Normalize(DATASET_IMAGE_MEAN, DATASET_IMAGE_STD),  # custom
-])
-#: default validation augmentation
-TORCHVISION_VALID_TRANSFORM = T.Compose([
-    T.Resize(size=256, interpolation=InterpolationMode.BILINEAR),
-    T.CenterCrop(size=224),
-    T.ToTensor(),
-    # T.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225]),
-    T.Normalize(DATASET_IMAGE_MEAN, DATASET_IMAGE_STD),  # custom
-])
-TRAIN_PREPROCESS = LitPreprocess(512)
-VALID_PREPROCESS = LitPreprocess(224)
-# RENAME LATER
-KORNIA_TRAIN_TRANSFORM = TRAIN_PREPROCESS
-KORNIA_VALID_TRANSFORM = VALID_PREPROCESS
 
 #: feasible image extension for testing
+from kaggle_plantpatho.augment import KORNIA_TRAIN_TRANSFORM, KORNIA_VALID_TRANSFORM
+
 IMAGE_EXTENSIONS = ('.png', '.jpg', '.jpeg')
 
 
