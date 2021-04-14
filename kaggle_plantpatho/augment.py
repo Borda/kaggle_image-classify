@@ -50,7 +50,7 @@ class LitPreprocess(nn.Module):
     def __init__(self, img_size: int):
         super().__init__()
         self.preprocess = nn.Sequential(
-            #K.augmentation.RandomResizedCrop((224, 224)),
+            # K.augmentation.RandomResizedCrop((224, 224)),
             Resize((img_size, img_size)),  # use this better to see whole image
             augmentation.Normalize(Tensor(DATASET_IMAGE_MEAN), Tensor(DATASET_IMAGE_STD)),
         )
