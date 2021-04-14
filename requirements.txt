@@ -2,7 +2,7 @@ torch>=1.6
 torchmetrics>=0.2.0
 pytorch-lightning>=1.2.0
 torchvision
-kornia>=0.4
+git+https://github.com/kornia/kornia
 pandas
 matplotlib
 Pillow
