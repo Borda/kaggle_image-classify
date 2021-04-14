@@ -2,7 +2,8 @@ torch>=1.6
 torchmetrics>=0.2.0
 pytorch-lightning>=1.2.0
 torchvision
-git+https://github.com/kornia/kornia
+kornia>=0.4  # todo: it shall be 0.4.x or 0.5 as there is bug and performance issue
+https://github.com/kornia/kornia/archive/refs/heads/master.zip
 pandas
 matplotlib
 Pillow
