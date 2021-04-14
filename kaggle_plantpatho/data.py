@@ -144,7 +144,7 @@ class PlantPathologySimpleDataset(PlantPathologyDataset):
 
     @property
     def label_histogram(self) -> Tensor:
-        return torch.tensor(np.bincount(self.labels))
+        return torch.bincount(self.labels)
 
 
 class PlantPathologyDM(LightningDataModule):
