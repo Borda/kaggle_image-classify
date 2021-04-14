@@ -78,8 +78,8 @@ class LitAugmenter(nn.Module):
             augmentation.RandomResizedCrop((224, 224)),
             augmentation.RandomHorizontalFlip(p=0.5),
             augmentation.RandomVerticalFlip(p=0.5),
-            #K.augmentation.GaussianBlur((3, 3), (0.1, 2.0), p=1.0),
-            #K.augmentation.ColorJitter(0.01, 0.01, 0.01, 0.01, p=0.25),
+            # K.augmentation.GaussianBlur((3, 3), (0.1, 2.0), p=1.0),
+            # K.augmentation.ColorJitter(0.01, 0.01, 0.01, 0.01, p=0.25),
         )
         self.denorm = augmentation.Denormalize(Tensor(DATASET_IMAGE_MEAN), Tensor(DATASET_IMAGE_STD))
 
@@ -87,8 +87,8 @@ class LitAugmenter(nn.Module):
     def forward(self, x: Tensor) -> Tensor:
         assert len(x.shape) == 4, x.shape
         out = x
-        #idx = torch.randperm(len(self.geometric))[0]  # OneOf
-        #out = self.geometric[idx](x)
+        # idx = torch.randperm(len(self.geometric))[0]  # OneOf
+        # out = self.geometric[idx](x)
         out = self.augmentations(out)
         if self.viz:
             out = self.denorm(out)
