@@ -89,7 +89,7 @@ class MultiPlantPathology(LitPlantPathology):
         self.loss = nn.BCEWithLogitsLoss()
 
     def forward(self, x):
-        return F.sigmoid(self.model(x))
+        return torch.sigmoid(self.model(x))
 
     def compute_loss(self, y_hat, y):
         return self.loss(y_hat, y.to(float))
