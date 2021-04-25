@@ -25,18 +25,18 @@ LUT_LABELS = dict(enumerate(sorted(UNIQUE_LABELS)))
 def get_model(model_path: str = MODEL_PATH_LOCAL) -> LitPlantPathology:
 
     if not os.path.isfile(model_path):
+        # download models if it missing locally
         gdown.download(MODEL_PATH_GDRIVE, model_path, quiet=False)
 
     net = torch.load(model_path)
     model = MultiPlantPathology(model=net)
-    model.eval()
-    return model
+    return model.eval()
 
 
 def process_image(
     model: LitPlantPathology,
     img_path: str = 'tests/data/test_images/8a0d7cad7053f18d.jpg',
-    streamlit_app: bool = False
+    streamlit_app: bool = False,
 ):
     if not img_path:
         return
@@ -49,6 +49,7 @@ def process_image(
 
     with torch.no_grad():
         onehot = model(img.unsqueeze(0))[0]
+    # process classification outputs
     onehot_bin = np.round(onehot.detach().numpy(), decimals=2)
     labels = PlantPathologyDM.onehot_mapping(onehot, LUT_LABELS)
 
@@ -64,6 +65,7 @@ st.set_option('deprecation.showfileUploaderEncoding', False)
 st.header("Plant Pathology Demo")
 img_file = st.sidebar.file_uploader(label='Upload an image', type=['png', 'jpg'])
 
+# load model and ideally use cache version to speedup
 model = get_model()
 
 # run the app
