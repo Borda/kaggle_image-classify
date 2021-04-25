@@ -6,5 +6,8 @@ kornia>=0.4  # todo: it shall be 0.4.x or 0.5 as there is bug and performance is
 https://github.com/kornia/kornia/archive/refs/heads/master.zip
 pandas
 matplotlib
-Pillow
 seaborn
+
+# Stream App
+streamlit
+gdown
