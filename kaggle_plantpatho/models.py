@@ -1,3 +1,5 @@
+from typing import Optional
+
 import torch
 import torchmetrics
 import torchvision
@@ -25,7 +27,7 @@ class LitPlantPathology(LightningModule):
     This model is meant and tested to be used together with `PlantPathologySimpleDataset`
     """
 
-    def __init__(self, model, lr: float = 1e-4):
+    def __init__(self, model, lr: float = 1e-4, augmentations: Optional[nn.Module] = None):
         super().__init__()
         self.model = model
         self.arch = self.model.arch
@@ -35,6 +37,7 @@ class LitPlantPathology(LightningModule):
         self.val_accuracy = torchmetrics.Accuracy()
         self.val_f1_score = torchmetrics.F1(self.num_classes, average='weighted')
         self.learn_rate = lr
+        self.aug = augmentations
 
     # def on_epoch_start(self):
     #     if self.trainer.current_epoch < 2:
@@ -52,6 +55,8 @@ class LitPlantPathology(LightningModule):
 
     def training_step(self, batch, batch_idx):
         x, y = batch
+        if self.aug:
+            x = self.aug(x)  # => batched augmentations
         y_hat = self(x)
         loss = self.compute_loss(y_hat, y)
         self.log("train_loss", loss, prog_bar=False)
@@ -78,8 +83,8 @@ class MultiPlantPathology(LitPlantPathology):
     This model is meant and tested to be used together with `PlantPathologyDataset`
     """
 
-    def __init__(self, model, lr: float = 1e-4):
-        super().__init__(model, lr)
+    def __init__(self, model, lr: float = 1e-4, augmentations: Optional[nn.Module] = None):
+        super().__init__(model, lr, augmentations)
         self.val_f1_score = torchmetrics.F1(self.num_classes, multilabel=True, average='weighted')
         self.loss = nn.BCEWithLogitsLoss()
 

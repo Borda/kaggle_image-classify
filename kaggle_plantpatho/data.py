@@ -13,40 +13,9 @@ from PIL import Image
 from pytorch_lightning import LightningDataModule
 from torch import Tensor
 from torch.utils.data import DataLoader, Dataset
-from torchvision import transforms as T
-from torchvision.transforms import InterpolationMode
 
-try:
-    from torchsampler import ImbalancedDatasetSampler
-except ImportError:
-    ImbalancedDatasetSampler = None
+from kaggle_plantpatho.augment import KORNIA_TRAIN_TRANSFORM, KORNIA_VALID_TRANSFORM
 
-#: computed color mean from given dataset
-DATASET_IMAGE_MEAN = (0.48690377, 0.62658835, 0.4078062)
-#: computed color STD from given dataset
-DATASET_IMAGE_STD = (0.18142496, 0.15883319, 0.19026241)
-#: default training augmentation
-TRAIN_TRANSFORM = T.Compose([
-    T.Resize(size=512, interpolation=InterpolationMode.BILINEAR),
-    T.RandomRotation(degrees=30),
-    T.RandomPerspective(distortion_scale=0.4),
-    T.RandomResizedCrop(size=224),
-    T.RandomHorizontalFlip(p=0.5),
-    T.RandomVerticalFlip(p=0.5),
-    # T.ColorJitter(brightness=0.05, contrast=0.05, saturation=0.05, hue=0.05),
-    T.ToTensor(),
-    # T.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225]),
-    T.Normalize(DATASET_IMAGE_MEAN, DATASET_IMAGE_STD),  # custom
-])
-#: default validation augmentation
-VALID_TRANSFORM = T.Compose([
-    T.Resize(size=256, interpolation=InterpolationMode.BILINEAR),
-    T.CenterCrop(size=224),
-    T.ToTensor(),
-    # T.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225]),
-    T.Normalize(DATASET_IMAGE_MEAN, DATASET_IMAGE_STD),  # custom
-])
-#: feasible image extension for testing
 IMAGE_EXTENSIONS = ('.png', '.jpg', '.jpeg')
 
 
@@ -144,7 +113,7 @@ class PlantPathologySimpleDataset(PlantPathologyDataset):
 
     @property
     def label_histogram(self) -> Tensor:
-        return torch.tensor(np.bincount(self.labels))
+        return torch.bincount(self.labels)
 
 
 class PlantPathologyDM(LightningDataModule):
@@ -184,8 +153,8 @@ class PlantPathologyDM(LightningDataModule):
         self.valid_dataset = None
         self.test_table = []
         self.test_dataset = None
-        self.train_transforms = train_transforms or TRAIN_TRANSFORM
-        self.valid_transforms = valid_transforms or VALID_TRANSFORM
+        self.train_transforms = train_transforms or KORNIA_TRAIN_TRANSFORM
+        self.valid_transforms = valid_transforms or KORNIA_VALID_TRANSFORM
         self.dataset_cls: Type = PlantPathologySimpleDataset if simple else PlantPathologyDataset
 
     def prepare_data(self):
