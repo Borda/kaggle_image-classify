@@ -3,32 +3,47 @@ Simple StreamLit app fro plant classification
 
 >> streamlit run streamlit-app.py
 """
+import os
 
+import gdown
+import numpy as np
 import streamlit as st
 import torch
 from PIL import Image
-import numpy as np
 
 from kaggle_plantpatho.augment import TORCHVISION_VALID_TRANSFORM
 from kaggle_plantpatho.data import PlantPathologyDM
-from kaggle_plantpatho.models import MultiPlantPathology
+from kaggle_plantpatho.models import LitPlantPathology, MultiPlantPathology
 
-PATH_MODEL = 'assets/fgvc8_resnet50.pt'
+MODEL_PATH_GDRIVE = 'https://drive.google.com/uc?id=1bynbFW0FpIt7fnqzImu2UIM1PHb9-yjw'
+MODEL_PATH_LOCAL = 'fgvc8_resnet50.pt'
 UNIQUE_LABELS = ('scab', 'rust', 'complex', 'frog_eye_leaf_spot', 'powdery_mildew', 'cider_apple_rust', 'healthy')
 LUT_LABELS = dict(enumerate(sorted(UNIQUE_LABELS)))
 
 
-def process_image(img_path: str = 'tests/data/test_images/8a0d7cad7053f18d.jpg', model_path: str = PATH_MODEL, streamlit_app: bool = False):
+@st.cache(allow_output_mutation=True)
+def get_model(model_path: str = MODEL_PATH_LOCAL) -> LitPlantPathology:
+
+    if not os.path.isfile(model_path):
+        gdown.download(MODEL_PATH_GDRIVE, model_path, quiet=False)
+
+    net = torch.load(model_path)
+    model = MultiPlantPathology(model=net)
+    model.eval()
+    return model
+
+
+def process_image(
+    model: LitPlantPathology,
+    img_path: str = 'tests/data/test_images/8a0d7cad7053f18d.jpg',
+    streamlit_app: bool = False
+):
     if not img_path:
         return
 
     img = Image.open(img_path)
     if streamlit_app:
         st.image(img)
-
-    net = torch.load(model_path)
-    model = MultiPlantPathology(model=net)
-    model.eval()
 
     img = TORCHVISION_VALID_TRANSFORM(img)
 
@@ -46,8 +61,11 @@ def process_image(img_path: str = 'tests/data/test_images/8a0d7cad7053f18d.jpg',
 st.set_option('deprecation.showfileUploaderEncoding', False)
 
 # Upload an image and set some options for demo purposes
-st.header("Plant Pathology")
+st.header("Plant Pathology Demo")
 img_file = st.sidebar.file_uploader(label='Upload an image', type=['png', 'jpg'])
 
+model = get_model()
+
 # run the app
-process_image(img_file, streamlit_app=True)
+process_image(model, img_file, streamlit_app=True)
+# process_image(model)  # dry rn with locals

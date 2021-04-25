@@ -8,3 +8,7 @@ pandas
 matplotlib
 Pillow
 seaborn
+
+# Stream App
+streamlit
+gdown

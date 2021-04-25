@@ -155,10 +155,10 @@ class PlantPathologyDM(LightningDataModule):
 
     @staticmethod
     def onehot_mapping(
-            onehot: Tensor,
-            lut_label: Dict[int, str],
-            thr: float = 0.5,
-            label_required: bool = True,
+        onehot: Tensor,
+        lut_label: Dict[int, str],
+        thr: float = 0.5,
+        label_required: bool = True,
     ) -> Union[str, List[str]]:
         """Convert Model outputs to string labels
 
