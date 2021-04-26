@@ -165,24 +165,41 @@ class PlantPathologyDM(LightningDataModule):
         assert self.train_dataset and self.valid_dataset
         return max(self.train_dataset.num_classes, self.valid_dataset.num_classes)
 
+    @staticmethod
+    def onehot_mapping(
+        onehot: Tensor,
+        lut_label: Dict[int, str],
+        thr: float = 0.5,
+        label_required: bool = True,
+    ) -> Union[str, List[str]]:
+        """Convert Model outputs to string labels
+
+        Args:
+            onehot: one-hot encoding
+            lut_label: look-up-table with labels
+            thr: threshold for label binarization
+            label_required: if it is required to return any label and no label is above `thr`, use argmax
+        """
+        assert lut_label
+        # on case it is not one hot encoding but single label
+        if onehot.nelement() == 1:
+            return lut_label[onehot[0]]
+        labels = [lut_label[i] for i, s in enumerate(onehot) if s >= thr]
+        # in case no reached threshold then take max
+        if not labels and label_required:
+            idx = torch.argmax(onehot).item()
+            labels = [lut_label[idx]]
+        return sorted(labels)
+
     def onehot_to_labels(self, onehot: Tensor, thr: float = 0.5, label_required: bool = True) -> Union[str, List[str]]:
-        """Convert Model outputs to string raw_labels
+        """Convert Model outputs to string labels
 
         Args:
             onehot: one-hot encoding
             thr: threshold for label binarization
             label_required: if it is required to return any label and no label is above `thr`, use argmax
         """
-        assert self.lut_label
-        # on case it is not one hot encoding but single label
-        if onehot.nelement() == 1:
-            return self.lut_label[onehot[0]]
-        labels = [self.lut_label[i] for i, s in enumerate(onehot) if s >= thr]
-        # in case no reached threshold then take max
-        if not labels and label_required:
-            idx = torch.argmax(onehot).item()
-            labels = [self.lut_label[idx]]
-        return sorted(labels)
+        return self.onehot_mapping(onehot, self.lut_label, thr=thr, label_required=label_required)
 
     def setup(self, *_, **__) -> None:
         """Prepare datasets"""
