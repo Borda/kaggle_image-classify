@@ -6,13 +6,17 @@ import os
 from typing import Dict, List, Optional, Sequence, Tuple, Type, Union
 
 import matplotlib.pyplot as plt
-import numpy as np
 import pandas as pd
 import torch
 from PIL import Image
 from pytorch_lightning import LightningDataModule
 from torch import Tensor
 from torch.utils.data import DataLoader, Dataset
+
+try:
+    from torchsampler import ImbalancedDatasetSampler
+except ImportError:
+    ImbalancedDatasetSampler = None
 
 from kaggle_plantpatho.augment import KORNIA_TRAIN_TRANSFORM, KORNIA_VALID_TRANSFORM
 
@@ -97,6 +101,19 @@ class PlantPathologyDataset(Dataset):
     def __len__(self) -> int:
         return len(self.data)
 
+    def get_sample_pseudo_label(dataset, idx: int):
+        if not hasattr(dataset, 'label_freq_index'):
+            idx_nb = list(enumerate(dataset.label_histogram))
+            idx_nb = sorted(idx_nb, key=lambda x: x[1])
+            dataset.label_freq_index = [i[0] for i in idx_nb]
+        onehot = dataset[idx][1]
+        # take the less occurred label, not the tuple combination as combination does not matter too much
+        for i in dataset.label_freq_index:
+            if onehot[i]:
+                return i
+        # this is a failer...
+        return tuple(onehot.numpy())
+
 
 class PlantPathologySimpleDataset(PlantPathologyDataset):
     """Simplified version; we keep only complex label for multi-label cases and the true label for all others."""
@@ -113,7 +130,12 @@ class PlantPathologySimpleDataset(PlantPathologyDataset):
 
     @property
     def label_histogram(self) -> Tensor:
+        if not isinstance(self.labels, Tensor):
+            self.labels = torch.tensor(self.labels)
         return torch.bincount(self.labels)
+
+    def get_sample_pseudo_label(dataset, idx: int):
+        return dataset[idx][1]
 
 
 class PlantPathologyDM(LightningDataModule):
@@ -236,22 +258,20 @@ class PlantPathologyDM(LightningDataModule):
         logging.info(f"test dataset: {len(self.test_dataset)}")
 
     def train_dataloader(self) -> DataLoader:
-        dl_kwargs = dict()
         if ImbalancedDatasetSampler:
-            if issubclass(self.dataset_cls, PlantPathologySimpleDataset):
-                _get_label = lambda dataset, idx: dataset[idx][1]
-            else:
-                # todo: take the less orared label, not the tuple combination as combination does not matter too much
-                _get_label = lambda dataset, idx: tuple(dataset[idx][1])
-            dl_kwargs['sampler'] = ImbalancedDatasetSampler(
-                dataset=self.train_dataset, callback_get_label=_get_label,
+            dl_kwargs = dict(
+                shuffle=False,
+                sampler=ImbalancedDatasetSampler(
+                    dataset=self.train_dataset, callback_get_label=self.dataset_cls.get_sample_pseudo_label,
+                )
             )
+        else:
+            dl_kwargs = dict(shuffle=True)
 
         return DataLoader(
             self.train_dataset,
             batch_size=self.batch_size,
             num_workers=self.num_workers,
-            shuffle=True,
             **dl_kwargs,
         )
 
