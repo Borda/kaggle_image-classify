@@ -106,7 +106,7 @@ class PlantPathologyDataset(Dataset):
             idx_nb = list(enumerate(dataset.label_histogram))
             idx_nb = sorted(idx_nb, key=lambda x: x[1])
             dataset.label_freq_index = [i[0] for i in idx_nb]
-        onehot = dataset[idx][1]
+        onehot = dataset.labels[idx]
         # take the less occurred label, not the tuple combination as combination does not matter too much
         for i in dataset.label_freq_index:
             if onehot[i]:
@@ -135,7 +135,7 @@ class PlantPathologySimpleDataset(PlantPathologyDataset):
         return torch.bincount(self.labels)
 
     def get_sample_pseudo_label(dataset, idx: int):
-        return dataset[idx][1]
+        return dataset.labels[idx]
 
 
 class PlantPathologyDM(LightningDataModule):
