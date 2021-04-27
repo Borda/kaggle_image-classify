@@ -69,9 +69,7 @@ class PlantPathologyDataset(Dataset):
         self.img_names = list(self.data['image'])
         self.labels = self._prepare_labels()
         # compute importance order
-        idx_nb = list(enumerate(self.label_histogram))
-        idx_nb = sorted(idx_nb, key=lambda x: x[1])
-        self.label_freq_index = [i[0] for i in idx_nb]
+        self.label_importance_index = []
 
     def _prepare_labels(self) -> list:
         return [torch.tensor(self.to_onehot_encoding(lb)) if lb else None for lb in self.raw_labels]
@@ -106,9 +104,13 @@ class PlantPathologyDataset(Dataset):
         return len(self.data)
 
     def get_sample_pseudo_label(dataset, idx: int):
+        if not dataset.label_importance_index:
+            idx_nb = list(enumerate(dataset.label_histogram))
+            idx_nb = sorted(idx_nb, key=lambda x: x[1])
+            dataset.label_importance_index = [i[0] for i in idx_nb]
         onehot = dataset.labels[idx]
         # take the less occurred label, not the tuple combination as combination does not matter too much
-        for i in dataset.label_freq_index:
+        for i in dataset.label_importance_index:
             if onehot[i]:
                 return i
         # this is a failer...
