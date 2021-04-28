@@ -4,6 +4,7 @@ import logging
 import multiprocessing as mproc
 import os
 from typing import Dict, List, Optional, Sequence, Tuple, Type, Union
+from warnings import warn
 
 import matplotlib.pyplot as plt
 import pandas as pd
@@ -152,6 +153,7 @@ class PlantPathologyDM(LightningDataModule):
         train_transforms=None,
         valid_transforms=None,
         split: float = 0.8,
+        balancing: bool = True,
     ):
         super().__init__()
         # path configurations
@@ -171,6 +173,7 @@ class PlantPathologyDM(LightningDataModule):
         self.labels_unique: Sequence = ...
         self.lut_label: Dict = ...
         self.label_histogram: Tensor = ...
+        self.balancing = balancing
 
         # need to be filled in setup()
         self.train_dataset = None
@@ -260,7 +263,7 @@ class PlantPathologyDM(LightningDataModule):
         logging.info(f"test dataset: {len(self.test_dataset)}")
 
     def train_dataloader(self) -> DataLoader:
-        if ImbalancedDatasetSampler:
+        if self.balancing and ImbalancedDatasetSampler:
             dl_kwargs = dict(
                 shuffle=False,
                 sampler=ImbalancedDatasetSampler(
@@ -268,6 +271,8 @@ class PlantPathologyDM(LightningDataModule):
                     callback_get_label=self.dataset_cls.get_sample_pseudo_label,
                 )
             )
+        elif self.balancing:
+            warn('you have asked for `ImbalancedDatasetSampler` but you do not have it installed.')
         else:
             dl_kwargs = dict(shuffle=True)
 

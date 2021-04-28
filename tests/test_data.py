@@ -20,12 +20,14 @@ def test_dataset(data_cls, root_path=_PATH_HERE):
 
 
 @pytest.mark.parametrize("simple", [True, False])
-def test_datamodule(simple, root_path=_PATH_HERE):
+@pytest.mark.parametrize("balance", [True, False])
+def test_datamodule(simple, balance, root_path=_PATH_HERE):
     dm = PlantPathologyDM(
         path_csv="train.csv",
         base_path=os.path.join(root_path, "data"),
         simple=simple,
         split=0.6,
+        balancing=balance,
     )
     dm.setup()
     assert dm.labels_unique
