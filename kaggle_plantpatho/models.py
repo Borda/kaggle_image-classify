@@ -69,7 +69,7 @@ class LitPlantPathology(LightningModule):
         y_hat = self(x)
         loss = self.compute_loss(y_hat, y)
         self.log("valid_loss", loss, prog_bar=False)
-        self.log("valid_acc", self.val_accuracy(y_hat, y), prog_bar=False)
+        self.log("valid_acc", self.val_accuracy(y_hat, y), prog_bar=True)
         self.log("valid_f1", self.val_f1_score(y_hat, y), prog_bar=True)
 
     def configure_optimizers(self):
