@@ -33,9 +33,9 @@ class LitPlantPathology(LightningModule):
         self.arch = self.model.arch
         self.num_classes = self.model.num_classes
         self.train_accuracy = torchmetrics.Accuracy()
-        self.train_f1_score = torchmetrics.F1(self.num_classes, average='weighted')
+        self.train_f1_score = torchmetrics.F1(self.num_classes, multilabel=True, average='weighted')
         self.val_accuracy = torchmetrics.Accuracy()
-        self.val_f1_score = torchmetrics.F1(self.num_classes, average='weighted')
+        self.val_f1_score = torchmetrics.F1(self.num_classes, multilabel=True, average='weighted')
         self.learn_rate = lr
         self.aug = augmentations
 

@@ -1,5 +1,5 @@
 torch>=1.6
-torchmetrics>=0.2.0
+torchmetrics>=0.3.0
 pytorch-lightning>=1.2.0
 torchvision
 kornia>=0.4  # todo: it shall be 0.4.x or 0.5 as there is bug and performance issue
