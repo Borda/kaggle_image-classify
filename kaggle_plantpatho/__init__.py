@@ -1,6 +1,6 @@
 import os
 
-__version__ = "0.4.0"
+__version__ = "0.4.1"
 __docs__ = "Tooling for Kaggle Plant Pathology"
 __author__ = "Jiri Borovec"
 __author_email__ = "jirka@pytorchlightning.ai"
