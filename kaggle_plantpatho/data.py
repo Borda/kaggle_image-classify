@@ -4,6 +4,7 @@ import logging
 import multiprocessing as mproc
 import os
 from typing import Dict, List, Optional, Sequence, Tuple, Type, Union
+from warnings import warn
 
 import matplotlib.pyplot as plt
 import pandas as pd
@@ -13,7 +14,11 @@ from pytorch_lightning import LightningDataModule
 from torch import Tensor
 from torch.utils.data import DataLoader, Dataset
 
-#: feasible image extension for testing
+try:
+    from torchsampler import ImbalancedDatasetSampler
+except ImportError:
+    ImbalancedDatasetSampler = None
+
 from kaggle_plantpatho.augment import KORNIA_TRAIN_TRANSFORM, KORNIA_VALID_TRANSFORM
 
 IMAGE_EXTENSIONS = ('.png', '.jpg', '.jpeg')
@@ -46,10 +51,11 @@ class PlantPathologyDataset(Dataset):
             raise ValueError(f'unrecognised input for DataFrame/CSV: {df_data}')
 
         # take over existing table or load from file
+        self.raw_labels = list(self.data['labels'])
         if uq_labels:
             self.labels_unique = uq_labels
         else:
-            labels_all = list(itertools.chain(*[lbs.split(" ") for lbs in self.data['labels']]))
+            labels_all = list(itertools.chain(*[lbs.split(" ") for lbs in self.raw_labels]))
             self.labels_unique = sorted(set(labels_all))
         self.labels_lut = {lb: i for i, lb in enumerate(self.labels_unique)}
         self.num_classes = len(self.labels_unique)
@@ -62,7 +68,17 @@ class PlantPathologyDataset(Dataset):
         frac = int(split * len(self.data))
         self.data = self.data[:frac] if mode == 'train' else self.data[frac:]
         self.img_names = list(self.data['image'])
-        self.labels = list(self.data['labels'])
+        self.labels = self._prepare_labels()
+        # compute importance order
+        self.label_importance_index = []
+
+    def _prepare_labels(self) -> list:
+        return [torch.tensor(self.to_onehot_encoding(lb)) if lb else None for lb in self.raw_labels]
+
+    @property
+    def label_histogram(self) -> Tensor:
+        lb_stack = torch.tensor(list(map(tuple, self.labels)))
+        return torch.sum(lb_stack, dim=0)
 
     def to_onehot_encoding(self, labels: str) -> tuple:
         # processed with encoding
@@ -82,27 +98,47 @@ class PlantPathologyDataset(Dataset):
         if self.transforms:
             img = self.transforms(Image.fromarray(img))
         # in case of predictions, return image name as label
-        label = torch.tensor(self.to_onehot_encoding(label)) if label else img_name
+        label = label if label is not None else img_name
         return img, label
 
     def __len__(self) -> int:
         return len(self.data)
 
+    def get_sample_pseudo_label(dataset, idx: int):
+        if not dataset.label_importance_index:
+            idx_nb = list(enumerate(dataset.label_histogram))
+            idx_nb = sorted(idx_nb, key=lambda x: x[1])
+            dataset.label_importance_index = [i[0] for i in idx_nb]
+        onehot = dataset.labels[idx]
+        # take the less occurred label, not the tuple combination as combination does not matter too much
+        for i in dataset.label_importance_index:
+            if onehot[i]:
+                return i
+        # this is a failer...
+        return tuple(onehot.numpy())
+
 
 class PlantPathologySimpleDataset(PlantPathologyDataset):
     """Simplified version; we keep only complex label for multi-label cases and the true label for all others."""
 
-    def __getitem__(self, idx: int) -> tuple:
-        img, label = super().__getitem__(idx)
-        # shortcut for prediction without labels
-        if isinstance(label, str):
-            return img, label
-        # get complex or find the one...
-        if torch.sum(label) > 1:
-            label = self.labels_lut['complex']
-        else:
-            label = torch.argmax(label)
-        return img, int(label)
+    def _translate_labels(self, lb):
+        if lb is None:
+            return None
+        lb = self.labels_lut['complex'] if torch.sum(lb) > 1 else torch.argmax(lb)
+        return int(lb)
+
+    def _prepare_labels(self) -> list:
+        labels = super()._prepare_labels()
+        return list(map(self._translate_labels, labels))
+
+    @property
+    def label_histogram(self) -> Tensor:
+        if not isinstance(self.labels, Tensor):
+            self.labels = torch.tensor(self.labels)
+        return torch.bincount(self.labels)
+
+    def get_sample_pseudo_label(dataset, idx: int):
+        return dataset.labels[idx]
 
 
 class PlantPathologyDM(LightningDataModule):
@@ -117,6 +153,7 @@ class PlantPathologyDM(LightningDataModule):
         train_transforms=None,
         valid_transforms=None,
         split: float = 0.8,
+        balancing: bool = True,
     ):
         super().__init__()
         # path configurations
@@ -135,6 +172,8 @@ class PlantPathologyDM(LightningDataModule):
         self.num_workers = num_workers if num_workers is not None else mproc.cpu_count()
         self.labels_unique: Sequence = ...
         self.lut_label: Dict = ...
+        self.label_histogram: Tensor = ...
+        self.balancing = balancing
 
         # need to be filled in setup()
         self.train_dataset = None
@@ -194,6 +233,7 @@ class PlantPathologyDM(LightningDataModule):
         assert os.path.isdir(self.train_dir), f"missing folder: {self.train_dir}"
         ds = self.dataset_cls(self.path_csv, self.train_dir, mode='train', split=1.0)
         self.labels_unique = ds.labels_unique
+        self.label_histogram = ds.label_histogram
         self.lut_label = dict(enumerate(self.labels_unique))
 
         ds_defaults = dict(
@@ -222,12 +262,28 @@ class PlantPathologyDM(LightningDataModule):
         )
         logging.info(f"test dataset: {len(self.test_dataset)}")
 
+    def _dataloader_extra_args(self, dataset: PlantPathologyDataset) -> dict:
+        dl_kwargs = dict(shuffle=True)
+        # if you ask and you have it
+        if self.balancing and ImbalancedDatasetSampler:
+            dl_kwargs = dict(
+                shuffle=False,
+                sampler=ImbalancedDatasetSampler(
+                    dataset=dataset,
+                    callback_get_label=self.dataset_cls.get_sample_pseudo_label,
+                )
+            )
+        elif self.balancing:
+            warn('You have asked for `ImbalancedDatasetSampler` but you do not have it installed.')
+        return dl_kwargs
+
     def train_dataloader(self) -> DataLoader:
+        dl_kwargs = self._dataloader_extra_args(self.train_dataset)
         return DataLoader(
             self.train_dataset,
             batch_size=self.batch_size,
             num_workers=self.num_workers,
-            shuffle=True,
+            **dl_kwargs,
         )
 
     def val_dataloader(self) -> DataLoader:

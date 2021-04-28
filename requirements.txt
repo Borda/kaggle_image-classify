@@ -11,3 +11,6 @@ seaborn
 # Stream App
 streamlit
 gdown
+
+# extra
+https://github.com/Borda/imbalanced-dataset-sampler/archive/refs/heads/master.zip

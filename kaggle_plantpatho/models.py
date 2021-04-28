@@ -4,7 +4,7 @@ import torch
 import torchmetrics
 import torchvision
 from pytorch_lightning import LightningModule
-from torch import nn
+from torch import nn, Tensor
 from torch.nn import functional as F
 
 
@@ -47,10 +47,10 @@ class LitPlantPathology(LightningModule):
     #     self.model.train()
     #     # print("UNFREEZE")
 
-    def forward(self, x):
+    def forward(self, x: Tensor) -> Tensor:
         return F.softmax(self.model(x))
 
-    def compute_loss(self, y_hat, y):
+    def compute_loss(self, y_hat: Tensor, y: Tensor):
         return F.cross_entropy(y_hat, y)
 
     def training_step(self, batch, batch_idx):
@@ -88,8 +88,8 @@ class MultiPlantPathology(LitPlantPathology):
         self.val_f1_score = torchmetrics.F1(self.num_classes, multilabel=True, average='weighted')
         self.loss = nn.BCEWithLogitsLoss()
 
-    def forward(self, x):
+    def forward(self, x: Tensor) -> Tensor:
         return torch.sigmoid(self.model(x))
 
-    def compute_loss(self, y_hat, y):
+    def compute_loss(self, y_hat: Tensor, y: Tensor):
         return self.loss(y_hat, y.to(float))

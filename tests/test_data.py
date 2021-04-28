@@ -2,6 +2,7 @@ import os
 
 import numpy
 import pytest
+from torch import Tensor
 
 from kaggle_plantpatho.data import PlantPathologyDataset, PlantPathologyDM, PlantPathologySimpleDataset
 
@@ -19,14 +20,19 @@ def test_dataset(data_cls, root_path=_PATH_HERE):
 
 
 @pytest.mark.parametrize("simple", [True, False])
-def test_datamodule(simple, root_path=_PATH_HERE):
+@pytest.mark.parametrize("balance", [True, False])
+def test_datamodule(simple, balance, root_path=_PATH_HERE):
     dm = PlantPathologyDM(
-        path_csv=os.path.join(root_path, "data", "train.csv"),
+        path_csv="train.csv",
         base_path=os.path.join(root_path, "data"),
         simple=simple,
         split=0.6,
+        balancing=balance,
     )
     dm.setup()
+    assert dm.labels_unique
+    assert dm.lut_label
+    assert isinstance(dm.label_histogram, Tensor)
 
     for imgs, lbs in dm.train_dataloader():
         assert len(imgs)
