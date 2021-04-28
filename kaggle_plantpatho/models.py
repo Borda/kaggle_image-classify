@@ -33,19 +33,17 @@ class LitPlantPathology(LightningModule):
         self.arch = self.model.arch
         self.num_classes = self.model.num_classes
         self.train_accuracy = torchmetrics.Accuracy()
-        self.train_f1_score = torchmetrics.F1(self.num_classes, multilabel=True, average='weighted')
+        self.train_precision = torchmetrics.Precision(**self._metrics_extra_args)
+        self.train_f1_score = torchmetrics.F1(**self._metrics_extra_args)
         self.val_accuracy = torchmetrics.Accuracy()
-        self.val_f1_score = torchmetrics.F1(self.num_classes, multilabel=True, average='weighted')
+        self.val_precision = torchmetrics.Precision(**self._metrics_extra_args)
+        self.val_f1_score = torchmetrics.F1(**self._metrics_extra_args)
         self.learn_rate = lr
         self.aug = augmentations
 
-    # def on_epoch_start(self):
-    #     if self.trainer.current_epoch < 2:
-    #         return
-    #     for param in self.model.parameters():
-    #         param.requires_grad = True
-    #     self.model.train()
-    #     # print("UNFREEZE")
+    @property
+    def _metrics_extra_args(self):
+        return dict()
 
     def forward(self, x: Tensor) -> Tensor:
         return F.softmax(self.model(x))
@@ -61,6 +59,7 @@ class LitPlantPathology(LightningModule):
         loss = self.compute_loss(y_hat, y)
         self.log("train_loss", loss, prog_bar=False)
         self.log("train_acc", self.train_accuracy(y_hat, y), prog_bar=False)
+        self.log("train_prec", self.train_precision(y_hat, y), prog_bar=False)
         self.log("train_f1", self.train_f1_score(y_hat, y), prog_bar=True)
         return loss
 
@@ -70,6 +69,7 @@ class LitPlantPathology(LightningModule):
         loss = self.compute_loss(y_hat, y)
         self.log("valid_loss", loss, prog_bar=False)
         self.log("valid_acc", self.val_accuracy(y_hat, y), prog_bar=True)
+        self.log("valid_prec", self.val_precision(y_hat, y), prog_bar=True)
         self.log("valid_f1", self.val_f1_score(y_hat, y), prog_bar=True)
 
     def configure_optimizers(self):
@@ -83,13 +83,12 @@ class MultiPlantPathology(LitPlantPathology):
     This model is meant and tested to be used together with `PlantPathologyDataset`
     """
 
-    def __init__(self, model, lr: float = 1e-4, augmentations: Optional[nn.Module] = None):
-        super().__init__(model, lr, augmentations)
-        self.val_f1_score = torchmetrics.F1(self.num_classes, multilabel=True, average='weighted')
-        self.loss = nn.BCEWithLogitsLoss()
+    @property
+    def _metrics_extra_args(self):
+        return dict(num_classes=self.num_classes, multilabel=True, average='weighted')
 
     def forward(self, x: Tensor) -> Tensor:
-        return torch.sigmoid(self.model(x))
+        return F.sigmoid(self.model(x))
 
     def compute_loss(self, y_hat: Tensor, y: Tensor):
-        return self.loss(y_hat, y.to(float))
+        return F.binary_cross_entropy_with_logits(y_hat, y.to(y_hat.dtype))

@@ -30,6 +30,7 @@ def test_datamodule(simple, balance, root_path=_PATH_HERE):
         balancing=balance,
     )
     dm.setup()
+    assert dm.num_classes > 0
     assert dm.labels_unique
     assert dm.lut_label
     assert isinstance(dm.label_histogram, Tensor)
