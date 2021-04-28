@@ -262,20 +262,23 @@ class PlantPathologyDM(LightningDataModule):
         )
         logging.info(f"test dataset: {len(self.test_dataset)}")
 
-    def train_dataloader(self) -> DataLoader:
+    def _dataloader_extra_args(self, dataset: PlantPathologyDataset) -> dict:
+        dl_kwargs = dict(shuffle=True)
+        # if you ask and you have it
         if self.balancing and ImbalancedDatasetSampler:
             dl_kwargs = dict(
                 shuffle=False,
                 sampler=ImbalancedDatasetSampler(
-                    dataset=self.train_dataset,
+                    dataset=dataset,
                     callback_get_label=self.dataset_cls.get_sample_pseudo_label,
                 )
             )
         elif self.balancing:
-            warn('you have asked for `ImbalancedDatasetSampler` but you do not have it installed.')
-        else:
-            dl_kwargs = dict(shuffle=True)
+            warn('You have asked for `ImbalancedDatasetSampler` but you do not have it installed.')
+        return dl_kwargs
 
+    def train_dataloader(self) -> DataLoader:
+        dl_kwargs = self._dataloader_extra_args(self.train_dataset)
         return DataLoader(
             self.train_dataset,
             batch_size=self.batch_size,
