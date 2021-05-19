@@ -50,10 +50,7 @@ class PlantPathologyDataset(Dataset):
         else:
             raise ValueError(f'unrecognised input for DataFrame/CSV: {df_data}')
 
-        # shuffle data
-        self.data = self.data.sample(frac=1, random_state=random_state).reset_index(drop=True)
         # take over existing table or load from file
-        self.raw_labels = list(self.data['labels'])
         if uq_labels:
             self.labels_unique = tuple(uq_labels)
         else:
@@ -61,6 +58,9 @@ class PlantPathologyDataset(Dataset):
             self.labels_unique = tuple(sorted(set(labels_all)))
         self.labels_lut = {lb: i for i, lb in enumerate(self.labels_unique)}
         self.num_classes = len(self.labels_unique)
+
+        # shuffle data
+        self.data = self.data.sample(frac=1, random_state=random_state).reset_index(drop=True)
 
         # split dataset
         assert 0.0 <= split <= 1.0, f"split {split} is out of range"
@@ -70,6 +70,10 @@ class PlantPathologyDataset(Dataset):
         self.labels = self._prepare_labels()
         # compute importance order
         self.label_importance_index = []
+
+    @property
+    def raw_labels(self):
+        return list(self.data['labels'])
 
     def _prepare_labels(self) -> list:
         return [torch.tensor(self.to_onehot_encoding(lb)) if lb else None for lb in self.raw_labels]

@@ -42,11 +42,13 @@ _TEST_LABELS_ONEHOT = [
         (PlantPathologySimpleDataset, [3, 1, 4, 0, 2, 3, 1]),
     ]
 )
-def test_dataset(data_cls, labels, root_path=_PATH_HERE):
+@pytest.mark.parametrize("phase", ['train', 'valid'])
+def test_dataset(data_cls, labels, phase, root_path=_PATH_HERE):
     dataset = data_cls(
         df_data=os.path.join(root_path, "data", "train.csv"),
         path_img_dir=os.path.join(root_path, "data", "train_images"),
-        split=1.0,
+        split=1.0 if phase == 'train' else 0.0,
+        mode=phase,
     )
     img, _ = dataset[0]
     assert isinstance(img, numpy.ndarray)
