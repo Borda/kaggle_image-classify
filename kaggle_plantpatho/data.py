@@ -50,18 +50,17 @@ class PlantPathologyDataset(Dataset):
         else:
             raise ValueError(f'unrecognised input for DataFrame/CSV: {df_data}')
 
+        # shuffle data
+        self.data = self.data.sample(frac=1, random_state=random_state).reset_index(drop=True)
         # take over existing table or load from file
         self.raw_labels = list(self.data['labels'])
         if uq_labels:
-            self.labels_unique = uq_labels
+            self.labels_unique = tuple(uq_labels)
         else:
             labels_all = list(itertools.chain(*[lbs.split(" ") for lbs in self.raw_labels]))
-            self.labels_unique = sorted(set(labels_all))
+            self.labels_unique = tuple(sorted(set(labels_all)))
         self.labels_lut = {lb: i for i, lb in enumerate(self.labels_unique)}
         self.num_classes = len(self.labels_unique)
-
-        # shuffle data
-        self.data = self.data.sample(frac=1, random_state=random_state).reset_index(drop=True)
 
         # split dataset
         assert 0.0 <= split <= 1.0, f"split {split} is out of range"
@@ -153,7 +152,7 @@ class PlantPathologyDM(LightningDataModule):
         train_transforms=None,
         valid_transforms=None,
         split: float = 0.8,
-        balancing: bool = True,
+        balancing: bool = False,
     ):
         super().__init__()
         # path configurations
