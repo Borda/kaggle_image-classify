@@ -50,6 +50,7 @@ def test_dataset(data_cls, labels, phase, root_path=_PATH_HERE):
         split=1.0 if phase == 'train' else 0.0,
         mode=phase,
     )
+    assert len(dataset) == 7
     img, _ = dataset[0]
     assert isinstance(img, numpy.ndarray)
     assert _TEST_IMAGE_NAMES == tuple(dataset.img_names) == tuple(dataset.data['image'])
