@@ -88,7 +88,7 @@ class MultiPlantPathology(LitPlantPathology):
         return dict(num_classes=self.num_classes, multilabel=True, average='weighted')
 
     def forward(self, x: Tensor) -> Tensor:
-        return F.sigmoid(self.model(x))
+        return torch.sigmoid(self.model(x))
 
     def compute_loss(self, y_hat: Tensor, y: Tensor):
         return F.binary_cross_entropy_with_logits(y_hat, y.to(y_hat.dtype))
