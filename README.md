@@ -21,6 +21,13 @@ A simple way how to use this basic functions:
 ! pip install https://github.com/Borda/kaggle_plant-pathology/archive/main.zip
 ```
 
+### run notebooks in Kaggle
+
+* [Plant Pathology with Flash](https://www.kaggle.com/jirkaborovec/plant-pathology-with-pytorch-lightning-flash)
+* [Plant Pathology with Lightning ⚡](https://www.kaggle.com/jirkaborovec/plant-pathology-with-lightning)
+* [Plant Pathology with Lightning [predictions]](https://www.kaggle.com/jirkaborovec/plant-pathology-with-lightning-predictions)
+
+
 ### run notebooks in Colab
 
 * [Plant pathology with Lightning](https://colab.research.google.com/github/Borda/kaggle_plant-pathology/blob/main/notebooks/Plant-Pathology-with-Lightning.ipynb)
