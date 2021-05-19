@@ -38,7 +38,7 @@ class LitPlantPathology(LightningModule):
         self.val_accuracy = torchmetrics.Accuracy()
         self.val_precision = torchmetrics.Precision(**self._metrics_extra_args)
         self.val_f1_score = torchmetrics.F1(**self._metrics_extra_args)
-        self.learn_rate = lr
+        self.learning_rate = lr
         self.aug = augmentations
 
     @property
@@ -73,7 +73,7 @@ class LitPlantPathology(LightningModule):
         self.log("valid_f1", self.val_f1_score(y_hat, y), prog_bar=True)
 
     def configure_optimizers(self):
-        optimizer = torch.optim.AdamW(self.model.parameters(), lr=self.learn_rate)
+        optimizer = torch.optim.AdamW(self.model.parameters(), lr=self.learning_rate)
         scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, self.trainer.max_epochs, 0)
         return [optimizer], [scheduler]
 

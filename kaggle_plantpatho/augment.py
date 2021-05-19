@@ -5,15 +5,15 @@ import torch
 import torch.nn as nn
 from kornia import augmentation, geometry, image_to_tensor
 # Define the augmentations pipeline
+from PIL import Image
 from torch import Tensor
 from torchvision import transforms as T
-from torchvision.transforms import InterpolationMode
 
 from kaggle_plantpatho import DATASET_IMAGE_MEAN, DATASET_IMAGE_STD
 
 #: default training augmentation
 TORCHVISION_TRAIN_TRANSFORM = T.Compose([
-    T.Resize(size=512, interpolation=InterpolationMode.BILINEAR),
+    T.Resize(size=512, interpolation=Image.BILINEAR),
     T.RandomRotation(degrees=30),
     T.RandomPerspective(distortion_scale=0.4),
     T.RandomResizedCrop(size=224),
@@ -26,7 +26,7 @@ TORCHVISION_TRAIN_TRANSFORM = T.Compose([
 ])
 #: default validation augmentation
 TORCHVISION_VALID_TRANSFORM = T.Compose([
-    T.Resize(size=256, interpolation=InterpolationMode.BILINEAR),
+    T.Resize(size=256, interpolation=Image.BILINEAR),
     T.CenterCrop(size=224),
     T.ToTensor(),
     # T.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225]),
