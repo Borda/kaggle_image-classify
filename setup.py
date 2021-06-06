@@ -10,7 +10,7 @@ from setuptools import find_packages, setup
 
 _PATH_ROOT = os.path.dirname(__file__)
 
-import challenge_xyz  # noqa: E402
+import kaggle_imet  # noqa: E402
 
 
 def _load_requirements(path_dir=_PATH_ROOT, comment_char='#'):
@@ -22,7 +22,7 @@ def _load_requirements(path_dir=_PATH_ROOT, comment_char='#'):
 
 
 def _load_long_description():
-    url = os.path.join(challenge_xyz.__homepage__, 'raw', challenge_xyz.__version__, 'docs')
+    url = os.path.join(kaggle_imet.__homepage__, 'raw', kaggle_imet.__version__, 'docs')
     text = open('README.md', encoding='utf-8').read()
     # replace relative repository path to absolute link to the release
     text = text.replace('](docs', f']({url}')
@@ -37,13 +37,13 @@ def _load_long_description():
 # the goal of the project is simplicity for researchers, don't want to add too much
 # engineer specific practices
 setup(
-    name='kaggle-sandbox',
-    version=challenge_xyz.__version__,
-    description=challenge_xyz.__docs__,
-    author=challenge_xyz.__author__,
-    author_email=challenge_xyz.__author_email__,
-    url=challenge_xyz.__homepage__,
-    license=challenge_xyz.__license__,
+    name='kaggle-imet',
+    version=kaggle_imet.__version__,
+    description=kaggle_imet.__docs__,
+    author=kaggle_imet.__author__,
+    author_email=kaggle_imet.__author_email__,
+    url=kaggle_imet.__homepage__,
+    license=kaggle_imet.__license__,
     packages=find_packages(exclude=['tests', 'docs']),
     long_description=_load_long_description(),
     long_description_content_type='text/markdown',
@@ -54,7 +54,7 @@ setup(
     setup_requires=[],
     install_requires=_load_requirements(_PATH_ROOT),
     project_urls={
-        "Source Code": challenge_xyz.__homepage__,
+        "Source Code": kaggle_imet.__homepage__,
     },
     classifiers=[
         'Environment :: Console',
