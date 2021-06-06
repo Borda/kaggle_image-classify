@@ -1,1 +1,7 @@
 torch>=1.6
+pytorch-lightning>=1.2
+joblib
+torchvision
+pandas
+tqdm
+Pillow>=8.2

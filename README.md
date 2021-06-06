@@ -32,4 +32,3 @@ I would recommend uploading the dataset to you personal gDrive and then in noteb
 ### some results
 
 Training progress with ResNet50 with training  for 10 epochs > over 96% validation accuracy:
-
