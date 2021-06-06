@@ -47,3 +47,5 @@ Training progress with ResNet50 with training  for 10 epochs > over 96% validati
 ### More reading
 
 - [Practical Lighting Tips to Rank on Kaggle Image Challenges](https://devblog.pytorchlightning.ai/practical-tips-to-rank-on-kaggle-image-challenges-with-lightning-242e2e533429)
+
+# Kaggle: [iMet Collection 2021 x AIC - FGVC8](https://www.kaggle.com/c/imet-2021-fgvc8)
