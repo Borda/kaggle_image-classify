@@ -37,10 +37,10 @@ class LitMet(LightningModule):
         self.train_accuracy = torchmetrics.Accuracy()
         _metrics_extra_args = dict(num_classes=self.num_classes, multilabel=True, average="weighted")
         self.train_precision = torchmetrics.Precision(**_metrics_extra_args)
-        self.train_f1_score = torchmetrics.F1S(**_metrics_extra_args)
+        self.train_f1_score = torchmetrics.F1Score(**_metrics_extra_args)
         self.val_accuracy = torchmetrics.Accuracy()
         self.val_precision = torchmetrics.Precision(**_metrics_extra_args)
-        self.val_f1_score = torchmetrics.F1(**_metrics_extra_args)
+        self.val_f1_score = torchmetrics.F1Score(**_metrics_extra_args)
         self.learning_rate = lr
         self.aug = augmentations
 
