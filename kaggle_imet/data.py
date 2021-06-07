@@ -84,6 +84,7 @@ class IMetDataset(Dataset):
             self.labels_unique = tuple(uq_labels)
         else:
             labels_all = list(itertools.chain(*[lbs.split(" ") for lbs in self.raw_labels]))
+            # labels_all = [int(lb) for lb in labels_all]
             self.labels_unique = tuple(sorted(set(labels_all)))
         self.labels_lut = {lb: i for i, lb in enumerate(self.labels_unique)}
         self.num_classes = len(self.labels_unique)
@@ -161,8 +162,8 @@ class IMetDM(LightningDataModule):
         path_csv: str = 'train-from-kaggle.csv',
         batch_size: int = 128,
         num_workers: int = None,
-        train_transforms=None,
-        valid_transforms=None,
+        train_transforms=TORCHVISION_TRAIN_TRANSFORM,
+        valid_transforms=TORCHVISION_VALID_TRANSFORM,
         split: float = 0.8,
     ):
         super().__init__()
