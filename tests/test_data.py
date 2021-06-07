@@ -60,9 +60,9 @@ def test_datamodule(root_path=_PATH_HERE):
         split=0.6,
     )
     dm.setup()
-    assert dm.num_classes > 0
-    assert dm.labels_unique
-    assert dm.lut_label
+    assert dm.num_classes == len(_TEST_UNIQUE_LABELS)
+    assert dm.labels_unique == _TEST_UNIQUE_LABELS
+    assert len(dm.lut_label) == len(_TEST_UNIQUE_LABELS)
     # assert isinstance(dm.label_histogram, Tensor)
 
     for imgs, lbs in dm.train_dataloader():

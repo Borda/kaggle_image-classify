@@ -15,7 +15,7 @@ Adding fine-grained attributes to aid in the visual understanding of the museum 
 
 A simple way how to use this basic functions:
 ```bash
-! pip install https://github.com/Borda/kaggle_iMet-collection/archive/refs/heads/main.zip
+! pip install https://github.com/Borda/kaggle_iMet-collection/archive/main.zip
 ```
 
 ### run notebooks in Kaggle
