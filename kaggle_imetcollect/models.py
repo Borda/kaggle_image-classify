@@ -1,11 +1,11 @@
 from typing import Optional
 
 import torch
-import torchmetrics
 import torchvision
 from pytorch_lightning import LightningModule
 from torch import nn, Tensor
 from torch.nn import functional as F
+from torchmetrics import Accuracy, F1Score, Precision
 
 
 class LitResnet(nn.Module):
@@ -29,18 +29,25 @@ class LitResnet(nn.Module):
 class LitMet(LightningModule):
     """This model is meant and tested to be used together with ..."""
 
-    def __init__(self, model, lr: float = 1e-4, augmentations: Optional[nn.Module] = None):
+    def __init__(
+        self,
+        model,
+        num_classes: int,
+        name: str = "",
+        lr: float = 1e-4,
+        augmentations: Optional[nn.Module] = None,
+    ):
         super().__init__()
         self.model = model
-        self.arch = self.model.arch
-        self.num_classes = self.model.num_classes
-        self.train_accuracy = torchmetrics.Accuracy()
+        self.arch = name
+        self.num_classes = num_classes
+        self.train_accuracy = Accuracy()
         _metrics_extra_args = dict(num_classes=self.num_classes, multilabel=True, average="weighted")
-        self.train_precision = torchmetrics.Precision(**_metrics_extra_args)
-        self.train_f1_score = torchmetrics.F1Score(**_metrics_extra_args)
-        self.val_accuracy = torchmetrics.Accuracy()
-        self.val_precision = torchmetrics.Precision(**_metrics_extra_args)
-        self.val_f1_score = torchmetrics.F1Score(**_metrics_extra_args)
+        self.train_precision = Precision(**_metrics_extra_args)
+        self.train_f1_score = F1Score(**_metrics_extra_args)
+        self.val_accuracy = Accuracy()
+        self.val_precision = Precision(**_metrics_extra_args)
+        self.val_f1_score = F1Score(**_metrics_extra_args)
         self.learning_rate = lr
         self.aug = augmentations
 
