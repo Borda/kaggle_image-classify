@@ -1,6 +1,6 @@
 import os
 
-import pytest
+import timm
 from pytorch_lightning import Trainer
 
 from kaggle_imet.data import IMetDM
@@ -13,10 +13,9 @@ def test_create_resnet():
     LitResnet(arch='resnet18')
 
 
-@pytest.mark.parametrize("model_cls", [LitResnet])
-def test_create_model(model_cls):
-    net = LitResnet(arch='resnet18')
-    LitMet(model=net)
+def test_create_model():
+    net = timm.create_model("resnet34", pretrained=False, num_classes=5)
+    LitMet(model=net, num_classes=5)
 
 
 def test_devel_run(tmpdir, root_path=_PATH_HERE):
@@ -28,8 +27,8 @@ def test_devel_run(tmpdir, root_path=_PATH_HERE):
         split=0.6,
     )
     dm.setup()
-    net = LitResnet(arch='resnet18', num_classes=dm.num_classes)
-    model = LitMet(model=net)
+    net = timm.create_model("resnet34", num_classes=dm.num_classes)
+    model = LitMet(model=net, num_classes=dm.num_classes)
 
     # smoke run
     trainer = Trainer(
