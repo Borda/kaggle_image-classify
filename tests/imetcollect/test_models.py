@@ -10,7 +10,7 @@ from tests import _ROOT_TESTS
 
 
 def test_create_resnet():
-    LitResnet(arch="resnet18")
+    LitResnet(arch="resnet18", pretrained=False)
 
 
 def test_create_model():

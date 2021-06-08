@@ -74,6 +74,7 @@ jobs:
       # see: https://github.com/actions/toolkit/issues/399
       continue-on-error: true
       with:
+        token: ${{ secrets.CODECOV_TOKEN }}
         file: coverage.xml
         flags: cpu,pytest,python${{ matrix.python-version }},${{ matrix.package }}
         fail_ci_if_error: false
