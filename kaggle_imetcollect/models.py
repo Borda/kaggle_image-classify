@@ -39,7 +39,7 @@ class LitMet(LightningModule):
     ):
         super().__init__()
         self.model = model
-        self.arch = name
+        self.name = name
         self.num_classes = num_classes
         self.train_accuracy = Accuracy()
         _metrics_extra_args = dict(num_classes=self.num_classes, multilabel=True, average="weighted")
