@@ -27,7 +27,7 @@ def test_devel_run(tmpdir, root_path=_ROOT_TESTS):
         split=0.6,
     )
     dm.setup()
-    net = timm.create_model("resnet34", num_classes=dm.num_classes)
+    net = timm.create_model("resnet18", num_classes=dm.num_classes)
     model = LitMet(model=net, num_classes=dm.num_classes)
 
     # smoke run

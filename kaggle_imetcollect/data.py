@@ -66,7 +66,7 @@ class IMetDataset(Dataset):
         mode: str = "train",
         split: float = 0.8,
         uq_labels: Tuple[str] = None,
-        random_state=42,
+        random_state: Optional[int] = None,
         check_imgs: bool = True,
     ):
         self.path_img_dir = path_img_dir
@@ -105,7 +105,8 @@ class IMetDataset(Dataset):
                 logging.warning(f"found and dropped {nb_small_imgs} too small or invalid images :/")
             self.data = self.data[self.data["pixels"] >= self.IMAGE_SIZE_LIMIT]
         # shuffle data
-        self.data = self.data.sample(frac=1, random_state=random_state).reset_index(drop=True)
+        if random_state is not None:
+            self.data = self.data.sample(frac=1, random_state=random_state).reset_index(drop=True)
 
         # split dataset
         assert 0.0 <= split <= 1.0, f"split {split} is out of range"
@@ -204,8 +205,7 @@ class IMetDM(LightningDataModule):
 
     @property
     def num_classes(self) -> int:
-        assert self.train_dataset and self.valid_dataset
-        return max(self.train_dataset.num_classes, self.valid_dataset.num_classes)
+        return len(self.labels_unique)
 
     @staticmethod
     def onehot_mapping(
@@ -233,14 +233,19 @@ class IMetDM(LightningDataModule):
             labels = [lut_label[idx]]
         return sorted(labels)
 
-    def onehot_to_labels(self, onehot: Tensor, thr: float = 0.5, label_required: bool = True) -> Union[str, List[str]]:
+    def onehot_to_labels(
+        self, onehot: Tensor, thr: float = 0.5, with_sigm: bool = True, label_required: bool = True
+    ) -> Union[str, List[str]]:
         """Convert Model outputs to string labels.
 
         Args:
             onehot: one-hot encoding
             thr: threshold for label binarization
+            with_sigm: apply sigmoid to convert to probabilities
             label_required: if it is required to return any label and no label is above `thr`, use argmax
         """
+        if with_sigm:
+            onehot = torch.sigmoid(onehot)
         return self.onehot_mapping(onehot, self.lut_label, thr=thr, label_required=label_required)
 
     def setup(self, *_, **__) -> None:

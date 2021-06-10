@@ -60,13 +60,14 @@ def test_dataset(phase, root_path=_ROOT_TESTS):
         path_img_dir=os.path.join(root_path, "data_imet-collect", "train-1", "train-1"),
         split=1.0 if phase == "train" else 0.0,
         mode=phase,
+        random_state=42,
     )
     assert len(dataset) == 7
     img, _ = dataset[0]
     assert isinstance(img, Image.Image)
     _img_names = [os.path.splitext(im)[0] for im in dataset.img_names]
-    assert _TEST_IMAGE_NAMES == tuple(_img_names) == tuple(dataset.data["id"])
-    assert _TEST_UNIQUE_LABELS == dataset.labels_unique
+    assert tuple(_img_names) == tuple(dataset.data["id"]) == _TEST_IMAGE_NAMES
+    assert dataset.labels_unique == _TEST_UNIQUE_LABELS
     lbs = [tensor(dataset[i][1]) for i in range(len(dataset))]
     # mm = lambda lb: np.array([i for i, l in enumerate(lb) if l])
     # lb_names = [np.array(dataset.labels_unique)[mm(lb)] for lb in lbs]
