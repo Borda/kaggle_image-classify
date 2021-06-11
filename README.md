@@ -27,7 +27,8 @@ A simple way how to use this basic functions:
 
 ### run notebooks in Colab
 
-* [iMet Collection with Lightning](https://colab.research.google.com/github/Borda/kaggle_iMet-collection/blob/main/notebooks/iMet-with-Lightning.ipynb)
+* [iMet Collection with Lightning with ResNet50](https://colab.research.google.com/github/Borda/kaggle_iMet-collection/blob/main/notebooks/iMet-with-Lightning.ipynb)
+* [iMet Collection with Lightning and VisionTransformers from TIMM](https://colab.research.google.com/github/Borda/kaggle_iMet-collection/blob/main/notebooks/iMet-with-Lightning-and-ViT.ipynb)
 
 I would recommend uploading the dataset to you personal gDrive and then in notebooks connect the gDrive which saves you lost of time with re-uploading dataset when ever your Colab is reset... :]
 
