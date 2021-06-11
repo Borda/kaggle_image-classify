@@ -20,12 +20,12 @@ ImageFile.LOAD_TRUNCATED_IMAGES = True
 
 #: default training augmentation
 TORCHVISION_TRAIN_TRANSFORM = T.Compose([
-    T.Resize(size=512, interpolation=Image.BILINEAR),
-    T.RandomRotation(degrees=30),
+    T.Resize(size=256, interpolation=Image.BILINEAR),
+    T.RandomRotation(degrees=25),
     T.RandomPerspective(distortion_scale=0.2),
     T.RandomResizedCrop(size=224),
-    T.RandomHorizontalFlip(p=0.5),
-    # T.RandomVerticalFlip(p=0.5),
+    # T.RandomHorizontalFlip(p=0.5),
+    T.RandomVerticalFlip(p=0.5),
     # T.ColorJitter(brightness=0.05, contrast=0.05, saturation=0.05, hue=0.05),
     T.ToTensor(),
     T.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225]),
@@ -166,6 +166,7 @@ class IMetDM(LightningDataModule):
         train_transforms=TORCHVISION_TRAIN_TRANSFORM,
         valid_transforms=TORCHVISION_VALID_TRANSFORM,
         split: float = 0.8,
+        random_state: Optional[int] = None,
     ):
         super().__init__()
         # path configurations
@@ -184,6 +185,7 @@ class IMetDM(LightningDataModule):
         # other configs
         self.batch_size = batch_size
         self.split = split
+        self.random_state = random_state
         self.num_workers = num_workers if num_workers is not None else mproc.cpu_count()
         self.labels_unique: Sequence = ...
         self.lut_label: Dict = ...
@@ -228,11 +230,13 @@ class IMetDM(LightningDataModule):
             labels = [lut_label[idx]]
         return sorted(labels)
 
-    def onehot_to_labels(self,
-                         onehot: Tensor,
-                         thr: float = 0.5,
-                         with_sigm: bool = True,
-                         label_required: bool = True) -> Union[str, List[str]]:
+    def onehot_to_labels(
+        self,
+        onehot: Tensor,
+        thr: float = 0.5,
+        with_sigm: bool = True,
+        label_required: bool = True,
+    ) -> Union[str, List[str]]:
         """Convert Model outputs to string labels
 
         Args:
@@ -260,6 +264,7 @@ class IMetDM(LightningDataModule):
             split=self.split,
             uq_labels=self.labels_unique,
             check_imgs=False,
+            random_state=self.random_state,
         )
         self.train_dataset = IMetDataset(**ds_defaults, mode='train', transforms=self.train_transforms)
         logging.info(f"training dataset: {len(self.train_dataset)}")
