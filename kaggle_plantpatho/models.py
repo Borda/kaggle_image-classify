@@ -29,6 +29,8 @@ class LitPlantPathology(LightningModule):
 
     def __init__(self, model, lr: float = 1e-4, augmentations: Optional[nn.Module] = None):
         super().__init__()
+        if isinstance(model, str):
+            model = LitResnet(arch=model)
         self.model = model
         self.arch = self.model.arch
         self.num_classes = self.model.num_classes
