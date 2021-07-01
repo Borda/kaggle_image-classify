@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Optional, Union
 
 import torch
 import torchmetrics
@@ -27,13 +27,15 @@ class LitPlantPathology(LightningModule):
     This model is meant and tested to be used together with `PlantPathologySimpleDataset`
     """
 
-    def __init__(self, model, lr: float = 1e-4, augmentations: Optional[nn.Module] = None):
+    def __init__(
+        self, model: Union[nn.Module, str] = "ResNet50", lr: float = 1e-4, augmentations: Optional[nn.Module] = None
+    ):
         super().__init__()
         if isinstance(model, str):
             model = LitResnet(arch=model)
         self.model = model
-        self.arch = self.model.arch
-        self.num_classes = self.model.num_classes
+        self.arch = model.arch
+        self.num_classes = model.num_classes
         self.train_accuracy = torchmetrics.Accuracy()
         self.train_precision = torchmetrics.Precision(**self._metrics_extra_args)
         self.train_f1_score = torchmetrics.F1(**self._metrics_extra_args)

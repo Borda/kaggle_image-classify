@@ -2,6 +2,7 @@ import os
 
 import pytest
 from pytorch_lightning import Trainer
+from torch import nn
 
 from kaggle_plantpatho.data import PlantPathologyDM
 from kaggle_plantpatho.models import LitPlantPathology, LitResnet, MultiPlantPathology
@@ -13,10 +14,10 @@ def test_create_resnet():
     LitResnet(arch='resnet18')
 
 
+@pytest.mark.parametrize("net", [LitResnet(arch='resnet18'), "resnet18"])
 @pytest.mark.parametrize("model_cls", [LitPlantPathology, MultiPlantPathology])
-def test_create_model(model_cls):
-    net = LitResnet(arch='resnet18')
-    LitPlantPathology(model=net)
+def test_create_model(model_cls, net):
+    model_cls(model=net)
 
 
 @pytest.mark.parametrize("ds_simple,model_cls", [

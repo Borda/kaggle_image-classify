@@ -150,7 +150,7 @@ class PlantPathologyDM(LightningDataModule):
         self,
         path_csv: str = 'train.csv',
         base_path: str = '.',
-        batch_size: int = 128,
+        batch_size: int = 64,
         num_workers: int = None,
         simple: bool = False,
         train_transforms=None,
