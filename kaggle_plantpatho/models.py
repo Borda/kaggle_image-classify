@@ -85,7 +85,7 @@ class MultiPlantPathology(LitPlantPathology):
 
     @property
     def _metrics_extra_args(self):
-        return dict(num_classes=self.num_classes, multilabel=True, average='weighted')
+        return dict(num_classes=self.num_classes, average='weighted')
 
     def forward(self, x: Tensor) -> Tensor:
         return torch.sigmoid(self.model(x))
