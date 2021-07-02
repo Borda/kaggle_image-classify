@@ -107,18 +107,21 @@ class PlantPathologyDataset(Dataset):
     def __len__(self) -> int:
         return len(self.data)
 
-    def get_sample_pseudo_label(dataset, idx: int):
-        if not dataset.label_importance_index:
-            idx_nb = list(enumerate(dataset.label_histogram))
+    def get_sample_pseudo_label(self, idx: int):
+        if not self.label_importance_index:
+            idx_nb = list(enumerate(self.label_histogram))
             idx_nb = sorted(idx_nb, key=lambda x: x[1])
-            dataset.label_importance_index = [i[0] for i in idx_nb]
-        onehot = dataset.labels[idx]
+            self.label_importance_index = [i[0] for i in idx_nb]
+        onehot = self.labels[idx]
         # take the less occurred label, not the tuple combination as combination does not matter too much
-        for i in dataset.label_importance_index:
+        for i in self.label_importance_index:
             if onehot[i]:
                 return i
         # this is a failer...
         return tuple(onehot.numpy())
+
+    def get_sample_pseudo_labels(self, *_):
+        return [self.get_sample_pseudo_label(i) for i in range(len(self))]
 
 
 class PlantPathologySimpleDataset(PlantPathologyDataset):
@@ -140,8 +143,8 @@ class PlantPathologySimpleDataset(PlantPathologyDataset):
             self.labels = torch.tensor(self.labels)
         return torch.bincount(self.labels)
 
-    def get_sample_pseudo_label(dataset, idx: int):
-        return dataset.labels[idx]
+    def get_sample_pseudo_label(self, idx: int):
+        return self.labels[idx]
 
 
 class PlantPathologyDM(LightningDataModule):
@@ -150,7 +153,7 @@ class PlantPathologyDM(LightningDataModule):
         self,
         path_csv: str = 'train.csv',
         base_path: str = '.',
-        batch_size: int = 128,
+        batch_size: int = 32,
         num_workers: int = None,
         simple: bool = False,
         train_transforms=None,
@@ -273,7 +276,7 @@ class PlantPathologyDM(LightningDataModule):
                 shuffle=False,
                 sampler=ImbalancedDatasetSampler(
                     dataset=dataset,
-                    callback_get_label=self.dataset_cls.get_sample_pseudo_label,
+                    callback_get_label=self.dataset_cls.get_sample_pseudo_labels,
                 )
             )
         elif self.balancing:
