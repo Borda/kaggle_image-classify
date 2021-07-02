@@ -2,7 +2,6 @@ import os
 
 import pytest
 from pytorch_lightning import Trainer
-from torch import nn
 
 from kaggle_plantpatho.data import PlantPathologyDM
 from kaggle_plantpatho.models import LitPlantPathology, LitResnet, MultiPlantPathology

@@ -28,7 +28,10 @@ class LitPlantPathology(LightningModule):
     """
 
     def __init__(
-        self, model: Union[nn.Module, str] = "ResNet50", lr: float = 1e-4, augmentations: Optional[nn.Module] = None
+        self,
+        model: Union[nn.Module, str] = "ResNet50",
+        lr: float = 1e-4,
+        augmentations: Optional[nn.Module] = None,
     ):
         super().__init__()
         if isinstance(model, str):
