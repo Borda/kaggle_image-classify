@@ -42,7 +42,7 @@ _TEST_UNIQUE_LABELS = (
     "946",
     "96",
 )
-_TEST_LABELS_ONEHOT = [
+_TEST_LABELS_BINARY = [
     tensor([1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1]),
     tensor([0, 0, 0, 1, 0, 0, 0, 1, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0]),
     tensor([0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0]),
@@ -71,7 +71,7 @@ def test_dataset(phase, root_path=_ROOT_TESTS):
     lbs = [tensor(dataset[i][1]) for i in range(len(dataset))]
     # mm = lambda lb: np.array([i for i, l in enumerate(lb) if l])
     # lb_names = [np.array(dataset.labels_unique)[mm(lb)] for lb in lbs]
-    assert all(torch.equal(a, b) for a, b in zip(_TEST_LABELS_ONEHOT, lbs))
+    assert all(torch.equal(a, b) for a, b in zip(_TEST_LABELS_BINARY, lbs))
 
 
 def test_datamodule(root_path=_ROOT_TESTS):

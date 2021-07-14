@@ -39,7 +39,7 @@ def test_devel_run(tmpdir, root_path=_ROOT_TESTS):
 
     # test predictions
     for imgs, names in dm.test_dataloader():
-        onehots = model(imgs)
+        encode = model(imgs)
         # it has only batch size 1
-        for oh, name in zip(onehots, names):
-            dm.onehot_to_labels(oh)
+        for oh, name in zip(encode, names):
+            dm.binary_encoding_to_labels(oh)
