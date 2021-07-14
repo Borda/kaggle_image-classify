@@ -48,15 +48,15 @@ def process_image(
     img = TORCHVISION_VALID_TRANSFORM(img)
 
     with torch.no_grad():
-        onehot = model(img.unsqueeze(0))[0]
+        encode = model(img.unsqueeze(0))[0]
     # process classification outputs
-    onehot_bin = np.round(onehot.detach().numpy(), decimals=2)
-    labels = PlantPathologyDM.onehot_mapping(onehot, LUT_LABELS)
+    binary = np.round(encode.detach().numpy(), decimals=2)
+    labels = PlantPathologyDM.binary_mapping(encode, LUT_LABELS)
 
     if streamlit_app:
         st.write(', '.join(labels))
     else:
-        print(f"Onehot: {onehot_bin} >> {labels}")
+        print(f"Binary: {binary} >> {labels}")
 
 
 st.set_option('deprecation.showfileUploaderEncoding', False)

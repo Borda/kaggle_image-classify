@@ -76,14 +76,14 @@ class PlantPathologyDataset(Dataset):
         return list(self.data['labels'])
 
     def _prepare_labels(self) -> list:
-        return [torch.tensor(self.to_onehot_encoding(lb)) if lb else None for lb in self.raw_labels]
+        return [torch.tensor(self.to_binary_encoding(lb)) if lb else None for lb in self.raw_labels]
 
     @property
     def label_histogram(self) -> Tensor:
         lb_stack = torch.tensor(list(map(tuple, self.labels)))
         return torch.sum(lb_stack, dim=0)
 
-    def to_onehot_encoding(self, labels: str) -> tuple:
+    def to_binary_encoding(self, labels: str) -> tuple:
         # processed with encoding
         one_hot = [0] * len(self.labels_unique)
         for lb in labels.split(" "):
@@ -112,13 +112,13 @@ class PlantPathologyDataset(Dataset):
             idx_nb = list(enumerate(self.label_histogram))
             idx_nb = sorted(idx_nb, key=lambda x: x[1])
             self.label_importance_index = [i[0] for i in idx_nb]
-        onehot = self.labels[idx]
+        binary = self.labels[idx]
         # take the less occurred label, not the tuple combination as combination does not matter too much
         for i in self.label_importance_index:
-            if onehot[i]:
+            if binary[i]:
                 return i
         # this is a failer...
-        return tuple(onehot.numpy())
+        return tuple(binary.numpy())
 
     def get_sample_pseudo_labels(self, *_):
         return [self.get_sample_pseudo_label(i) for i in range(len(self))]
@@ -199,8 +199,8 @@ class PlantPathologyDM(LightningDataModule):
         return max(self.train_dataset.num_classes, self.valid_dataset.num_classes)
 
     @staticmethod
-    def onehot_mapping(
-        onehot: Tensor,
+    def binary_mapping(
+        encoding: Tensor,
         lut_label: Dict[int, str],
         thr: float = 0.5,
         label_required: bool = True,
@@ -208,31 +208,36 @@ class PlantPathologyDM(LightningDataModule):
         """Convert Model outputs to string labels
 
         Args:
-            onehot: one-hot encoding
+            encoding: one-hot encoding
             lut_label: look-up-table with labels
             thr: threshold for label binarization
             label_required: if it is required to return any label and no label is above `thr`, use argmax
         """
         assert lut_label
         # on case it is not one hot encoding but single label
-        if onehot.nelement() == 1:
-            return lut_label[onehot[0]]
-        labels = [lut_label[i] for i, s in enumerate(onehot) if s >= thr]
+        if encoding.nelement() == 1:
+            return lut_label[encoding[0]]
+        labels = [lut_label[i] for i, s in enumerate(encoding) if s >= thr]
         # in case no reached threshold then take max
         if not labels and label_required:
-            idx = torch.argmax(onehot).item()
+            idx = torch.argmax(encoding).item()
             labels = [lut_label[idx]]
         return sorted(labels)
 
-    def onehot_to_labels(self, onehot: Tensor, thr: float = 0.5, label_required: bool = True) -> Union[str, List[str]]:
+    def binary_encoding_to_labels(
+        self,
+        encoding: Tensor,
+        thr: float = 0.5,
+        label_required: bool = True,
+    ) -> Union[str, List[str]]:
         """Convert Model outputs to string labels
 
         Args:
-            onehot: one-hot encoding
+            encoding: one-hot encoding
             thr: threshold for label binarization
             label_required: if it is required to return any label and no label is above `thr`, use argmax
         """
-        return self.onehot_mapping(onehot, self.lut_label, thr=thr, label_required=label_required)
+        return self.binary_mapping(encoding, self.lut_label, thr=thr, label_required=label_required)
 
     def setup(self, *_, **__) -> None:
         """Prepare datasets"""

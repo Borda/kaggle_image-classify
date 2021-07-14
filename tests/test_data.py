@@ -25,7 +25,7 @@ _TEST_UNIQUE_LABELS = (
     'rust',
     'scab',
 )
-_TEST_LABELS_ONEHOT = [
+_TEST_LABELS_BINARY = [
     [0, 0, 0, 1, 0, 0, 0],
     [0, 1, 1, 0, 0, 0, 1],
     [0, 0, 0, 0, 1, 0, 0],
@@ -38,7 +38,7 @@ _TEST_LABELS_ONEHOT = [
 
 @pytest.mark.parametrize(
     "data_cls,labels", [
-        (PlantPathologyDataset, _TEST_LABELS_ONEHOT),
+        (PlantPathologyDataset, _TEST_LABELS_BINARY),
         (PlantPathologySimpleDataset, [3, 1, 4, 0, 2, 3, 1]),
     ]
 )
