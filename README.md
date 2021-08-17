@@ -41,3 +41,7 @@ I would recommend uploading the dataset to you personal gDrive and then in noteb
 Training progress with ResNet50 with training  for 10 epochs > over 96% validation accuracy:
 
 ![Training process](./assets/metrics.png)
+
+### More reading
+
+- [Practical Lighting Tips to Rank on Kaggle Image Challenges](https://devblog.pytorchlightning.ai/practical-tips-to-rank-on-kaggle-image-challenges-with-lightning-242e2e533429)
