@@ -1,7 +1,6 @@
 import glob
 import itertools
 import logging
-import multiprocessing as mproc
 import os
 from typing import Dict, List, Optional, Sequence, Tuple, Type, Union
 from warnings import warn
@@ -175,7 +174,7 @@ class PlantPathologyDM(LightningDataModule):
         # other configs
         self.batch_size = batch_size
         self.split = split
-        self.num_workers = num_workers if num_workers is not None else mproc.cpu_count()
+        self.num_workers = num_workers if num_workers is not None else os.cpu_count()
         self.labels_unique: Sequence = ...
         self.lut_label: Dict = ...
         self.label_histogram: Tensor = ...
