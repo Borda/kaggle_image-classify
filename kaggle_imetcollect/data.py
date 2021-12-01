@@ -5,18 +5,19 @@ import multiprocessing as mproc
 import os
 from typing import Dict, List, Optional, Sequence, Tuple, Union
 
+import cv2
 import numpy as np
 import pandas as pd
 import torch
 import tqdm
 from joblib import delayed, Parallel
-from PIL import Image, ImageFile
+from PIL import Image
 from pytorch_lightning import LightningDataModule
 from torch import Tensor
 from torch.utils.data import DataLoader, Dataset
 from torchvision import transforms as T
 
-ImageFile.LOAD_TRUNCATED_IMAGES = True
+# ImageFile.LOAD_TRUNCATED_IMAGES = True
 
 #: default training augmentation
 TORCHVISION_TRAIN_TRANSFORM = T.Compose(
@@ -43,9 +44,19 @@ TORCHVISION_VALID_TRANSFORM = T.Compose(
 )
 
 
+def load_image(path_img: str) -> Image.Image:
+    try:
+        return Image.open(path_img)
+    except AttributeError:
+        img = cv2.imread(path_img)
+        if img.ndim == 3 and img.shape[-1] == 3:
+            img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+        return Image.fromarray(img)
+
+
 def get_nb_pixels(img_path: str):
     try:
-        img = Image.open(img_path)
+        img = load_image(img_path)
         return np.prod(img.size)
     except Exception:
         return 0
@@ -145,7 +156,7 @@ class IMetDataset(Dataset):
         assert os.path.isfile(img_path)
         label = self.labels[idx]
         # todo: find some faster way, do conversion only if needed; im.mode not in ("L", "RGB")
-        img = Image.open(img_path).convert("RGB")
+        img = load_image(img_path).convert("RGB")
 
         # augmentation
         if self.transforms:
