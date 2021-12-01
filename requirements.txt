@@ -6,3 +6,4 @@ pandas
 tqdm
 Pillow>=8.2
 timm>=0.4.9
+opencv-python  # bypass PIL if needed
