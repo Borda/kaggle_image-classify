@@ -9,7 +9,6 @@ from torch.nn import functional as F
 
 
 class LitResnet(nn.Module):
-
     def __init__(self, arch: str, pretrained: bool = True, num_classes: int = 6):
         super().__init__()
         self.arch = arch
@@ -92,7 +91,7 @@ class MultiPlantPathology(LitPlantPathology):
 
     @property
     def _metrics_extra_args(self):
-        return dict(num_classes=self.num_classes, average='weighted')
+        return dict(num_classes=self.num_classes, average="weighted")
 
     def forward(self, x: Tensor) -> Tensor:
         return torch.sigmoid(self.model(x))

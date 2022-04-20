@@ -20,7 +20,7 @@ except ImportError:
 
 from kaggle_plantpatho.augment import KORNIA_TRAIN_TRANSFORM, KORNIA_VALID_TRANSFORM
 
-IMAGE_EXTENSIONS = ('.png', '.jpg', '.jpeg')
+IMAGE_EXTENSIONS = (".png", ".jpg", ".jpeg")
 
 
 class PlantPathologyDataset(Dataset):
@@ -28,10 +28,10 @@ class PlantPathologyDataset(Dataset):
 
     def __init__(
         self,
-        df_data: Union[str, pd.DataFrame] = 'train.csv',
-        path_img_dir: str = 'train_images',
+        df_data: Union[str, pd.DataFrame] = "train.csv",
+        path_img_dir: str = "train_images",
         transforms=None,
-        mode: str = 'train',
+        mode: str = "train",
         split: float = 0.8,
         uq_labels: Tuple[str] = None,
         random_state=42,
@@ -47,7 +47,7 @@ class PlantPathologyDataset(Dataset):
             assert os.path.isfile(df_data), f"missing file: {df_data}"
             self.data = pd.read_csv(df_data)
         else:
-            raise ValueError(f'unrecognised input for DataFrame/CSV: {df_data}')
+            raise ValueError(f"unrecognised input for DataFrame/CSV: {df_data}")
 
         # take over existing table or load from file
         if uq_labels:
@@ -64,15 +64,15 @@ class PlantPathologyDataset(Dataset):
         # split dataset
         assert 0.0 <= split <= 1.0, f"split {split} is out of range"
         frac = int(split * len(self.data))
-        self.data = self.data[:frac] if mode == 'train' else self.data[frac:]
-        self.img_names = list(self.data['image'])
+        self.data = self.data[:frac] if mode == "train" else self.data[frac:]
+        self.img_names = list(self.data["image"])
         self.labels = self._prepare_labels()
         # compute importance order
         self.label_importance_index = []
 
     @property
     def raw_labels(self):
-        return list(self.data['labels'])
+        return list(self.data["labels"])
 
     def _prepare_labels(self) -> list:
         return [torch.tensor(self.to_binary_encoding(lb)) if lb else None for lb in self.raw_labels]
@@ -129,7 +129,7 @@ class PlantPathologySimpleDataset(PlantPathologyDataset):
     def _translate_labels(self, lb):
         if lb is None:
             return None
-        lb = self.labels_lut['complex'] if torch.sum(lb) > 1 else torch.argmax(lb)
+        lb = self.labels_lut["complex"] if torch.sum(lb) > 1 else torch.argmax(lb)
         return int(lb)
 
     def _prepare_labels(self) -> list:
@@ -148,10 +148,14 @@ class PlantPathologySimpleDataset(PlantPathologyDataset):
 
 class PlantPathologyDM(LightningDataModule):
 
+    labels_unique: Sequence
+    lut_label: Dict
+    label_histogram: Tensor
+
     def __init__(
         self,
-        path_csv: str = 'train.csv',
-        base_path: str = '.',
+        path_csv: str = "train.csv",
+        base_path: str = ".",
         batch_size: int = 32,
         num_workers: int = None,
         simple: bool = False,
@@ -163,8 +167,8 @@ class PlantPathologyDM(LightningDataModule):
         super().__init__()
         # path configurations
         assert os.path.isdir(base_path), f"missing folder: {base_path}"
-        self.train_dir = os.path.join(base_path, 'train_images')
-        self.test_dir = os.path.join(base_path, 'test_images')
+        self.train_dir = os.path.join(base_path, "train_images")
+        self.test_dir = os.path.join(base_path, "test_images")
 
         if not os.path.isfile(path_csv):
             path_csv = os.path.join(base_path, path_csv)
@@ -175,9 +179,6 @@ class PlantPathologyDM(LightningDataModule):
         self.batch_size = batch_size
         self.split = split
         self.num_workers = num_workers if num_workers is not None else os.cpu_count()
-        self.labels_unique: Sequence = ...
-        self.lut_label: Dict = ...
-        self.label_histogram: Tensor = ...
         self.balancing = balancing
 
         # need to be filled in setup()
@@ -241,7 +242,7 @@ class PlantPathologyDM(LightningDataModule):
     def setup(self, *_, **__) -> None:
         """Prepare datasets"""
         assert os.path.isdir(self.train_dir), f"missing folder: {self.train_dir}"
-        ds = self.dataset_cls(self.path_csv, self.train_dir, mode='train', split=1.0)
+        ds = self.dataset_cls(self.path_csv, self.train_dir, mode="train", split=1.0)
         self.labels_unique = ds.labels_unique
         self.label_histogram = ds.label_histogram
         self.lut_label = dict(enumerate(self.labels_unique))
@@ -252,23 +253,23 @@ class PlantPathologyDM(LightningDataModule):
             split=self.split,
             uq_labels=self.labels_unique,
         )
-        self.train_dataset = self.dataset_cls(**ds_defaults, mode='train', transforms=self.train_transforms)
+        self.train_dataset = self.dataset_cls(**ds_defaults, mode="train", transforms=self.train_transforms)
         logging.info(f"training dataset: {len(self.train_dataset)}")
-        self.valid_dataset = self.dataset_cls(**ds_defaults, mode='valid', transforms=self.valid_transforms)
+        self.valid_dataset = self.dataset_cls(**ds_defaults, mode="valid", transforms=self.valid_transforms)
         logging.info(f"validation dataset: {len(self.valid_dataset)}")
 
         if not os.path.isdir(self.test_dir):
             return
-        ls_images = glob.glob(os.path.join(self.test_dir, '*.*'))
+        ls_images = glob.glob(os.path.join(self.test_dir, "*.*"))
         ls_images = [os.path.basename(p) for p in ls_images if os.path.splitext(p)[-1] in IMAGE_EXTENSIONS]
-        self.test_table = [dict(image=n, labels='') for n in ls_images]
+        self.test_table = [dict(image=n, labels="") for n in ls_images]
         self.test_dataset = self.dataset_cls(
             df_data=pd.DataFrame(self.test_table),
             path_img_dir=self.test_dir,
             split=0,
             uq_labels=self.labels_unique,
-            mode='test',
-            transforms=self.valid_transforms
+            mode="test",
+            transforms=self.valid_transforms,
         )
         logging.info(f"test dataset: {len(self.test_dataset)}")
 
@@ -281,10 +282,10 @@ class PlantPathologyDM(LightningDataModule):
                 sampler=ImbalancedDatasetSampler(
                     dataset=dataset,
                     callback_get_label=self.dataset_cls.get_sample_pseudo_labels,
-                )
+                ),
             )
         elif self.balancing:
-            warn('You have asked for `ImbalancedDatasetSampler` but you do not have it installed.')
+            warn("You have asked for `ImbalancedDatasetSampler` but you do not have it installed.")
         return dl_kwargs
 
     def train_dataloader(self) -> DataLoader:
@@ -312,4 +313,4 @@ class PlantPathologyDM(LightningDataModule):
                 num_workers=0,
                 shuffle=False,
             )
-        logging.warning('no testing images found')
+        logging.warning("no testing images found")

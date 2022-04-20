@@ -9,15 +9,15 @@ import gdown
 import numpy as np
 import streamlit as st
 import torch
-from PIL import Image
 
 from kaggle_plantpatho.augment import TORCHVISION_VALID_TRANSFORM
 from kaggle_plantpatho.data import PlantPathologyDM
 from kaggle_plantpatho.models import LitPlantPathology, MultiPlantPathology
+from PIL import Image
 
-MODEL_PATH_GDRIVE = 'https://drive.google.com/uc?id=1bynbFW0FpIt7fnqzImu2UIM1PHb9-yjw'
-MODEL_PATH_LOCAL = 'fgvc8_resnet50.pt'
-UNIQUE_LABELS = ('scab', 'rust', 'complex', 'frog_eye_leaf_spot', 'powdery_mildew', 'cider_apple_rust', 'healthy')
+MODEL_PATH_GDRIVE = "https://drive.google.com/uc?id=1bynbFW0FpIt7fnqzImu2UIM1PHb9-yjw"
+MODEL_PATH_LOCAL = "fgvc8_resnet50.pt"
+UNIQUE_LABELS = ("scab", "rust", "complex", "frog_eye_leaf_spot", "powdery_mildew", "cider_apple_rust", "healthy")
 LUT_LABELS = dict(enumerate(sorted(UNIQUE_LABELS)))
 
 
@@ -35,7 +35,7 @@ def get_model(model_path: str = MODEL_PATH_LOCAL) -> LitPlantPathology:
 
 def process_image(
     model: LitPlantPathology,
-    img_path: str = 'tests/data/test_images/8a0d7cad7053f18d.jpg',
+    img_path: str = "tests/data/test_images/8a0d7cad7053f18d.jpg",
     streamlit_app: bool = False,
 ):
     if not img_path:
@@ -54,16 +54,16 @@ def process_image(
     labels = PlantPathologyDM.binary_mapping(encode, LUT_LABELS)
 
     if streamlit_app:
-        st.write(', '.join(labels))
+        st.write(", ".join(labels))
     else:
         print(f"Binary: {binary} >> {labels}")
 
 
-st.set_option('deprecation.showfileUploaderEncoding', False)
+st.set_option("deprecation.showfileUploaderEncoding", False)
 
 # Upload an image and set some options for demo purposes
 st.header("Plant Pathology Demo")
-img_file = st.sidebar.file_uploader(label='Upload an image', type=['png', 'jpg'])
+img_file = st.sidebar.file_uploader(label="Upload an image", type=["png", "jpg"])
 
 # load model and ideally use cache version to speedup
 model = get_model()
