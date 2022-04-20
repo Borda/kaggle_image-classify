@@ -2,28 +2,28 @@ import os
 
 import numpy
 import pytest
-from torch import Tensor
 
 from kaggle_plantpatho.data import PlantPathologyDataset, PlantPathologyDM, PlantPathologySimpleDataset
+from torch import Tensor
 
 _PATH_HERE = os.path.dirname(__file__)
 _TEST_IMAGE_NAMES = (
-    '800113bb65efe69e.jpg',
-    '8002cb321f8bfcdf.jpg',
-    '8a2d598f2ec436e6.jpg',
-    '800f85dc5f407aef.jpg',
-    '8a1a97abda0b4a7a.jpg',
-    '8a0be55d81f4bf0c.jpg',
-    '8a954b82bf81f2bc.jpg',
+    "800113bb65efe69e.jpg",
+    "8002cb321f8bfcdf.jpg",
+    "8a2d598f2ec436e6.jpg",
+    "800f85dc5f407aef.jpg",
+    "8a1a97abda0b4a7a.jpg",
+    "8a0be55d81f4bf0c.jpg",
+    "8a954b82bf81f2bc.jpg",
 )
 _TEST_UNIQUE_LABELS = (
-    'cider_apple_rust',
-    'complex',
-    'frog_eye_leaf_spot',
-    'healthy',
-    'powdery_mildew',
-    'rust',
-    'scab',
+    "cider_apple_rust",
+    "complex",
+    "frog_eye_leaf_spot",
+    "healthy",
+    "powdery_mildew",
+    "rust",
+    "scab",
 )
 _TEST_LABELS_BINARY = [
     [0, 0, 0, 1, 0, 0, 0],
@@ -37,23 +37,24 @@ _TEST_LABELS_BINARY = [
 
 
 @pytest.mark.parametrize(
-    "data_cls,labels", [
+    "data_cls,labels",
+    [
         (PlantPathologyDataset, _TEST_LABELS_BINARY),
         (PlantPathologySimpleDataset, [3, 1, 4, 0, 2, 3, 1]),
-    ]
+    ],
 )
-@pytest.mark.parametrize("phase", ['train', 'valid'])
+@pytest.mark.parametrize("phase", ["train", "valid"])
 def test_dataset(data_cls, labels, phase, root_path=_PATH_HERE):
     dataset = data_cls(
         df_data=os.path.join(root_path, "data", "train.csv"),
         path_img_dir=os.path.join(root_path, "data", "train_images"),
-        split=1.0 if phase == 'train' else 0.0,
+        split=1.0 if phase == "train" else 0.0,
         mode=phase,
     )
     assert len(dataset) == 7
     img, _ = dataset[0]
     assert isinstance(img, numpy.ndarray)
-    assert _TEST_IMAGE_NAMES == tuple(dataset.img_names) == tuple(dataset.data['image'])
+    assert _TEST_IMAGE_NAMES == tuple(dataset.img_names) == tuple(dataset.data["image"])
     assert _TEST_UNIQUE_LABELS == dataset.labels_unique
     lbs = [dataset[i][1] for i in range(len(dataset))]
     if isinstance(lbs[0], Tensor):
