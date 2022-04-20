@@ -1,11 +1,11 @@
 from typing import Optional, Union
 
 import torch
-import torchmetrics
 import torchvision
 from pytorch_lightning import LightningModule
 from torch import nn, Tensor
 from torch.nn import functional as F
+from torchmetrics import Accuracy, F1Score, Precision
 
 
 class LitResnet(nn.Module):
@@ -38,12 +38,12 @@ class LitPlantPathology(LightningModule):
         self.model = model
         self.arch = model.arch
         self.num_classes = model.num_classes
-        self.train_accuracy = torchmetrics.Accuracy()
-        self.train_precision = torchmetrics.Precision(**self._metrics_extra_args)
-        self.train_f1_score = torchmetrics.F1(**self._metrics_extra_args)
-        self.val_accuracy = torchmetrics.Accuracy()
-        self.val_precision = torchmetrics.Precision(**self._metrics_extra_args)
-        self.val_f1_score = torchmetrics.F1(**self._metrics_extra_args)
+        self.train_accuracy = Accuracy()
+        self.train_precision = Precision(**self._metrics_extra_args)
+        self.train_f1_score = F1Score(**self._metrics_extra_args)
+        self.val_accuracy = Accuracy()
+        self.val_precision = Precision(**self._metrics_extra_args)
+        self.val_f1_score = F1Score(**self._metrics_extra_args)
         self.learning_rate = lr
         self.aug = augmentations
 
