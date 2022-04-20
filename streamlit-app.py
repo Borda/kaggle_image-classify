@@ -59,15 +59,16 @@ def process_image(
         print(f"Binary: {binary} >> {labels}")
 
 
-st.set_option("deprecation.showfileUploaderEncoding", False)
+if __name__ == "__main__":
+    st.set_option("deprecation.showfileUploaderEncoding", False)
 
-# Upload an image and set some options for demo purposes
-st.header("Plant Pathology Demo")
-img_file = st.sidebar.file_uploader(label="Upload an image", type=["png", "jpg"])
+    # Upload an image and set some options for demo purposes
+    st.header("Plant Pathology Demo")
+    img_file = st.sidebar.file_uploader(label="Upload an image", type=["png", "jpg"])
 
-# load model and ideally use cache version to speedup
-model = get_model()
+    # load model and ideally use cache version to speedup
+    model = get_model()
 
-# run the app
-process_image(model, img_file, streamlit_app=True)
-# process_image(model)  # dry rn with locals
+    # run the app
+    process_image(model, img_file, streamlit_app=True)
+    # process_image(model)  # dry rn with locals
