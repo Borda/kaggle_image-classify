@@ -3,19 +3,14 @@ import os
 import pytest
 
 from kaggle_plantpatho.data import PlantPathologyDM
-from kaggle_plantpatho.models import LitPlantPathology, LitResnet, MultiPlantPathology
+from kaggle_plantpatho.models import LitPlantPathology, MultiPlantPathology
 from pytorch_lightning import Trainer
 
 _PATH_HERE = os.path.dirname(__file__)
 
 
-def test_create_resnet():
-    LitResnet(arch="resnet18")
-
-
-@pytest.mark.parametrize("net", [LitResnet(arch="resnet18"), "resnet18"])
 @pytest.mark.parametrize("model_cls", [LitPlantPathology, MultiPlantPathology])
-def test_create_model(model_cls, net):
+def test_create_model(model_cls, net: str = "resnet18"):
     model_cls(model=net)
 
 
@@ -36,8 +31,7 @@ def test_devel_run(tmpdir, ds_simple, model_cls, root_path=_PATH_HERE):
         split=0.6,
     )
     dm.setup()
-    net = LitResnet(arch="resnet18", num_classes=dm.num_classes)
-    model = model_cls(model=net)
+    model = model_cls(model="resnet18", num_classes=dm.num_classes)
 
     # smoke run
     trainer = Trainer(

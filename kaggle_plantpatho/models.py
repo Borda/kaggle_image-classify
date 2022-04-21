@@ -1,24 +1,11 @@
 from typing import Optional, Union
 
+import timm
 import torch
-import torchvision
 from pytorch_lightning import LightningModule
 from torch import nn, Tensor
 from torch.nn import functional as F
 from torchmetrics import Accuracy, F1Score, Precision
-
-
-class LitResnet(nn.Module):
-    def __init__(self, arch: str, pretrained: bool = True, num_classes: int = 6):
-        super().__init__()
-        self.arch = arch
-        self.num_classes = num_classes
-        self.model = torchvision.models.__dict__[arch](pretrained=pretrained)
-        num_features = self.model.fc.in_features
-        self.model.fc = nn.Linear(num_features, num_classes)
-
-    def forward(self, x):
-        return self.model(x)
 
 
 class LitPlantPathology(LightningModule):
@@ -28,16 +15,19 @@ class LitPlantPathology(LightningModule):
 
     def __init__(
         self,
-        model: Union[nn.Module, str] = "ResNet50",
+        model: Union[nn.Module, str] = "resnet50",
+        num_classes: int = 6,
         lr: float = 1e-4,
         augmentations: Optional[nn.Module] = None,
     ):
         super().__init__()
         if isinstance(model, str):
-            model = LitResnet(arch=model)
-        self.model = model
-        self.arch = model.arch
-        self.num_classes = model.num_classes
+            self.arch = model
+            self.model = timm.create_model(model, pretrained=True, num_classes=num_classes)
+        else:
+            self.model = model
+            self.arch = model.__class__.__name__
+        self.num_classes = num_classes
         self.train_accuracy = Accuracy()
         self.train_precision = Precision(**self._metrics_extra_args)
         self.train_f1_score = F1Score(**self._metrics_extra_args)
