@@ -4,7 +4,7 @@
 #
 # > python cli_train.py \
 #       --model.model resnet34 \
-#       --data_plant-pathology.base_path /mnt/69B27B700DDA7D73/Datasets/plant-pathology-2021-640px/
+#       --data.base_path /mnt/69B27B700DDA7D73/Datasets/plant-pathology-2021-640px/
 #
 
 import torch

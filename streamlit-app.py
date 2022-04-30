@@ -1,4 +1,4 @@
-"""Simple StreamLit app fro plant classification.
+"""Simple StreamLit app for plant classification.
 
 >> streamlit run streamlit-app.py
 """

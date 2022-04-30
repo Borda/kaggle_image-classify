@@ -1,4 +1,4 @@
-"""Module to perform efficient preprocess and data_plant-pathology augmentation."""
+"""Module to perform efficient preprocess and data augmentation."""
 
 import numpy as np
 import torch

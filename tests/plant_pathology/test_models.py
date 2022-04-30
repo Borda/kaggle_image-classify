@@ -24,8 +24,8 @@ def test_create_model(model_cls, net: str = "resnet18"):
 def test_devel_run(tmpdir, ds_simple, model_cls, root_path=_PATH_HERE):
     """Sample fast dev run..."""
     dm = PlantPathologyDM(
-        path_csv=os.path.join(root_path, "../data_plant-pathology", "train.csv"),
-        base_path=os.path.join(root_path, "../data_plant-pathology"),
+        path_csv=os.path.join(root_path, "data_plant-pathology", "train.csv"),
+        base_path=os.path.join(root_path, "data_plant-pathology"),
         simple=ds_simple,
         batch_size=2,
         split=0.6,

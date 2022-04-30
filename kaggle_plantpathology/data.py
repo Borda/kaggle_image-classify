@@ -58,7 +58,7 @@ class PlantPathologyDataset(Dataset):
         self.labels_lut = {lb: i for i, lb in enumerate(self.labels_unique)}
         self.num_classes = len(self.labels_unique)
 
-        # shuffle data_plant-pathology
+        # shuffle data
         self.data = self.data.sample(frac=1, random_state=random_state).reset_index(drop=True)
 
         # split dataset
