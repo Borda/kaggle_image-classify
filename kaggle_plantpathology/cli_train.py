@@ -4,14 +4,14 @@
 #
 # > python cli_train.py \
 #       --model.model resnet34 \
-#       --data.base_path /mnt/69B27B700DDA7D73/Datasets/plant-pathology-2021-640px/
+#       --data_plant-pathology.base_path /mnt/69B27B700DDA7D73/Datasets/plant-pathology-2021-640px/
 #
 
 import torch
 from pytorch_lightning.utilities.cli import LightningCLI
 
-from kaggle_plantpatho.data import PlantPathologyDM
-from kaggle_plantpatho.models import MultiPlantPathology
+from kaggle_plantpathology.data import PlantPathologyDM
+from kaggle_plantpathology.models import MultiPlantPathology
 
 TRAINER_DEFAULTS = dict(
     gpus=1,

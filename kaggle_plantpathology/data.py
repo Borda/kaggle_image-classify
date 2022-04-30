@@ -18,7 +18,7 @@ try:
 except ImportError:
     ImbalancedDatasetSampler = None
 
-from kaggle_plantpatho.augment import KORNIA_TRAIN_TRANSFORM, KORNIA_VALID_TRANSFORM
+from kaggle_plantpathology.augment import KORNIA_TRAIN_TRANSFORM, KORNIA_VALID_TRANSFORM
 
 IMAGE_EXTENSIONS = (".png", ".jpg", ".jpeg")
 
@@ -58,7 +58,7 @@ class PlantPathologyDataset(Dataset):
         self.labels_lut = {lb: i for i, lb in enumerate(self.labels_unique)}
         self.num_classes = len(self.labels_unique)
 
-        # shuffle data
+        # shuffle data_plant-pathology
         self.data = self.data.sample(frac=1, random_state=random_state).reset_index(drop=True)
 
         # split dataset

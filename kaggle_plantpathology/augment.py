@@ -1,4 +1,4 @@
-"""Module to perform efficient preprocess and data augmentation."""
+"""Module to perform efficient preprocess and data_plant-pathology augmentation."""
 
 import numpy as np
 import torch
@@ -10,7 +10,7 @@ from PIL import Image
 from torch import Tensor
 from torchvision import transforms as T
 
-from kaggle_plantpatho import DATASET_IMAGE_MEAN, DATASET_IMAGE_STD
+from kaggle_plantpathology import DATASET_IMAGE_MEAN, DATASET_IMAGE_STD
 
 #: default training augmentation
 TORCHVISION_TRAIN_TRANSFORM = T.Compose(

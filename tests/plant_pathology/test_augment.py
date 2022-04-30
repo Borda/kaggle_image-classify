@@ -3,7 +3,7 @@ import os
 import pytest
 import torch
 
-from kaggle_plantpatho.augment import LitAugmenter
+from kaggle_plantpathology.augment import LitAugmenter
 
 _PATH_HERE = os.path.dirname(__file__)
 

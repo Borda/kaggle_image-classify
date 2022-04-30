@@ -58,6 +58,6 @@ jobs:
           virtualenv vEnv
           source vEnv/bin/activate
           pip install dist/*
-          cd .. & python -c "import kaggle_plantpatho ; print(kaggle_plantpatho.__version__)"
+          cd .. & python -c "import kaggle_plantpathology ; print(kaggle_plantpathology.__version__)"
           deactivate
           rm -rf vEnv
