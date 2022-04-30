@@ -205,7 +205,7 @@ class PlantPathologyDM(LightningDataModule):
         thr: float = 0.5,
         label_required: bool = True,
     ) -> Union[str, List[str]]:
-        """Convert Model outputs to string labels
+        """Convert Model outputs to string labels.
 
         Args:
             encoding: one-hot encoding
@@ -230,7 +230,7 @@ class PlantPathologyDM(LightningDataModule):
         thr: float = 0.5,
         label_required: bool = True,
     ) -> Union[str, List[str]]:
-        """Convert Model outputs to string labels
+        """Convert Model outputs to string labels.
 
         Args:
             encoding: one-hot encoding
@@ -240,7 +240,7 @@ class PlantPathologyDM(LightningDataModule):
         return self.binary_mapping(encoding, self.lut_label, thr=thr, label_required=label_required)
 
     def setup(self, *_, **__) -> None:
-        """Prepare datasets"""
+        """Prepare datasets."""
         assert os.path.isdir(self.train_dir), f"missing folder: {self.train_dir}"
         ds = self.dataset_cls(self.path_csv, self.train_dir, mode="train", split=1.0)
         self.labels_unique = ds.labels_unique

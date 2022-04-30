@@ -5,7 +5,6 @@
 [![codecov](https://codecov.io/gh/Borda/kaggle_plant-pathology/branch/main/graph/badge.svg)](https://codecov.io/gh/Borda/kaggle_plant-pathology)
 [![pre-commit.ci status](https://results.pre-commit.ci/badge/github/Borda/kaggle_plant-pathology/main.svg)](https://results.pre-commit.ci/latest/github/Borda/kaggle_plant-pathology/main)
 
-
 Foliar (leaf) diseases pose a major threat to the overall productivity and quality of apple orchards.
 The current process for disease diagnosis in apple orchards is based on manual scouting by humans, which is time-consuming and expensive.
 
@@ -18,24 +17,24 @@ The main objective of the competition is to develop machine learning-based model
 ### install this tooling
 
 A simple way how to use this basic functions:
+
 ```bash
 ! pip install https://github.com/Borda/kaggle_plant-pathology/archive/main.zip
 ```
 
 ### run notebooks in Kaggle
 
-* [Plant Pathology with Flash](https://www.kaggle.com/jirkaborovec/plant-pathology-with-pytorch-lightning-flash)
-* [Plant Pathology with Lightning ⚡](https://www.kaggle.com/jirkaborovec/plant-pathology-with-lightning)
-* [Plant Pathology with Lightning [predictions]](https://www.kaggle.com/jirkaborovec/plant-pathology-with-lightning-predictions)
-
+- [Plant Pathology with Flash](https://www.kaggle.com/jirkaborovec/plant-pathology-with-pytorch-lightning-flash)
+- [Plant Pathology with Lightning ⚡](https://www.kaggle.com/jirkaborovec/plant-pathology-with-lightning)
+- [Plant Pathology with Lightning \[predictions\]](https://www.kaggle.com/jirkaborovec/plant-pathology-with-lightning-predictions)
 
 ### run notebooks in Colab
 
-* [Plant pathology with Lightning](https://colab.research.google.com/github/Borda/kaggle_plant-pathology/blob/main/notebooks/Plant-Pathology-with-Lightning.ipynb)
-* [Plant pathology with Lightning - StandAlone](https://colab.research.google.com/github/Borda/kaggle_plant-pathology/blob/main/notebooks/Plant-Pathology-with-Lightning_standalone.ipynb) (without this package)
-* [Plant pathology with Flash](https://colab.research.google.com/github/Borda/kaggle_plant-pathology/blob/main/notebooks/Plant-Pathology-with-Flash.ipynb)
+- [Plant pathology with Lightning](https://colab.research.google.com/github/Borda/kaggle_plant-pathology/blob/main/notebooks/Plant-Pathology-with-Lightning.ipynb)
+- [Plant pathology with Lightning - StandAlone](https://colab.research.google.com/github/Borda/kaggle_plant-pathology/blob/main/notebooks/Plant-Pathology-with-Lightning_standalone.ipynb) (without this package)
+- [Plant pathology with Flash](https://colab.research.google.com/github/Borda/kaggle_plant-pathology/blob/main/notebooks/Plant-Pathology-with-Flash.ipynb)
 
-I would recommend uploading the dataset to you personal gDrive and then in notebooks connect the gDrive which saves you lost of time with re-uploading dataset when ever your Colab is reset... :]
+I would recommend uploading the dataset to you personal gDrive and then in notebooks connect the gDrive which saves you lost of time with re-uploading dataset when ever your Colab is reset... :\]
 
 ### some results
 
