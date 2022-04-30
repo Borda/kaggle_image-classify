@@ -1,7 +1,0 @@
-codecov>=2.1
-pytest>=6.0
-pytest-cov>2.10
-flake8>=3.0
-isort>=5.0
-yapf>=0.30
-twine>=3.2

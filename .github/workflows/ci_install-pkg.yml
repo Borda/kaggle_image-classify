@@ -1,11 +1,10 @@
-name: Install pkg
+name: Install package
 
 # see: https://help.github.com/en/actions/reference/events-that-trigger-workflows
 on:  # Trigger the workflow on push or pull request, but only for the main branch
   push:
     branches: [main]
-  pull_request:
-    branches: [main]
+  pull_request: {}
 
 jobs:
   pkg-check:
@@ -26,7 +25,7 @@ jobs:
       - name: Create package
         run: |
           pip install --upgrade setuptools wheel
-          python setup.py sdist
+          python setup.py sdist bdist_wheel
 
       - name: Verify package
         run: |
@@ -39,8 +38,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-20.04, macOS-10.15]  #, windows-2019
-        python-version: [3.7]  #, 3.8
+        os: [ubuntu-20.04, macOS-10.15, windows-2019]
+        python-version: [3.8]  #, 3.9
 
     steps:
       - uses: actions/checkout@master
@@ -50,14 +49,13 @@ jobs:
 
       - name: Create package
         run: |
-          python setup.py sdist
+          pip install setuptools wheel
+          python setup.py sdist bdist_wheel
 
-      - name: Install package
+      - name: Try installing
+        working-directory: dist
         run: |
-          pip install virtualenv
-          virtualenv vEnv
-          source vEnv/bin/activate
-          pip install dist/*
-          cd .. & python -c "import kaggle_plantpathology ; print(kaggle_plantpathology.__version__)"
-          deactivate
-          rm -rf vEnv
+          ls
+          pip install $(python -c "import glob ; print(' '.join(glob.glob('*.whl')))")
+          pip show kaggle-image-classification
+          python -c "import kaggle_imsegm ;  print(kaggle_imsegm.__version__)"

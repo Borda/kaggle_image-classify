@@ -15,9 +15,6 @@ exclude *.toml
 exclude *.svg
 exclude *-app.py
 
-# Include the Requirements
-include requirements.txt
-
 # Exclude build configs
 exclude *.yml
 exclude *.yaml
