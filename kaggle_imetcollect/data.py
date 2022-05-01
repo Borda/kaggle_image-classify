@@ -20,24 +20,28 @@ from torchvision import transforms as T
 # ImageFile.LOAD_TRUNCATED_IMAGES = True
 
 #: default training augmentation
-TORCHVISION_TRAIN_TRANSFORM = T.Compose([
-    T.Resize(size=256, interpolation=Image.BILINEAR),
-    T.RandomRotation(degrees=25),
-    T.RandomPerspective(distortion_scale=0.2),
-    T.RandomResizedCrop(size=224),
-    # T.RandomHorizontalFlip(p=0.5),
-    T.RandomVerticalFlip(p=0.5),
-    # T.ColorJitter(brightness=0.05, contrast=0.05, saturation=0.05, hue=0.05),
-    T.ToTensor(),
-    T.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225]),
-])
+TORCHVISION_TRAIN_TRANSFORM = T.Compose(
+    [
+        T.Resize(size=256, interpolation=Image.BILINEAR),
+        T.RandomRotation(degrees=25),
+        T.RandomPerspective(distortion_scale=0.2),
+        T.RandomResizedCrop(size=224),
+        # T.RandomHorizontalFlip(p=0.5),
+        T.RandomVerticalFlip(p=0.5),
+        # T.ColorJitter(brightness=0.05, contrast=0.05, saturation=0.05, hue=0.05),
+        T.ToTensor(),
+        T.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225]),
+    ]
+)
 #: default validation augmentation
-TORCHVISION_VALID_TRANSFORM = T.Compose([
-    T.Resize(size=256, interpolation=Image.BILINEAR),
-    T.CenterCrop(size=224),
-    T.ToTensor(),
-    T.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225]),
-])
+TORCHVISION_VALID_TRANSFORM = T.Compose(
+    [
+        T.Resize(size=256, interpolation=Image.BILINEAR),
+        T.CenterCrop(size=224),
+        T.ToTensor(),
+        T.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225]),
+    ]
+)
 
 
 def load_image(path_img: str) -> Image.Image:
@@ -60,16 +64,17 @@ def get_nb_pixels(img_path: str):
 
 class IMetDataset(Dataset):
     """The ful dataset with one-hot encoding for multi-label case."""
+
     IMAGE_SIZE_LIMIT = 1000
-    COL_LABELS = 'attribute_ids'
-    COL_IMAGES = 'id'
+    COL_LABELS = "attribute_ids"
+    COL_IMAGES = "id"
 
     def __init__(
         self,
-        df_data: Union[str, pd.DataFrame] = 'train-from-kaggle.csv',
-        path_img_dir: str = 'train-1/train-1',
+        df_data: Union[str, pd.DataFrame] = "train-from-kaggle.csv",
+        path_img_dir: str = "train-1/train-1",
         transforms=None,
-        mode: str = 'train',
+        mode: str = "train",
         split: float = 0.8,
         uq_labels: Tuple[str] = None,
         random_state: Optional[int] = None,
@@ -88,7 +93,7 @@ class IMetDataset(Dataset):
             assert os.path.isfile(df_data), f"missing file: {df_data}"
             self.data = pd.read_csv(df_data)
         else:
-            raise ValueError(f'unrecognised input for DataFrame/CSV: {df_data}')
+            raise ValueError(f"unrecognised input for DataFrame/CSV: {df_data}")
 
         # take over existing table or load from file
         if uq_labels:
@@ -103,13 +108,13 @@ class IMetDataset(Dataset):
         # filter/drop too small images
         if check_imgs:
             with Parallel(n_jobs=mproc.cpu_count()) as parallel:
-                self.data['pixels'] = parallel(
+                self.data["pixels"] = parallel(
                     delayed(get_nb_pixels)(os.path.join(self.path_img_dir, im)) for im in self.img_names
                 )
-            nb_small_imgs = sum(self.data['pixels'] < self.IMAGE_SIZE_LIMIT)
+            nb_small_imgs = sum(self.data["pixels"] < self.IMAGE_SIZE_LIMIT)
             if nb_small_imgs:
                 logging.warning(f"found and dropped {nb_small_imgs} too small or invalid images :/")
-            self.data = self.data[self.data['pixels'] >= self.IMAGE_SIZE_LIMIT]
+            self.data = self.data[self.data["pixels"] >= self.IMAGE_SIZE_LIMIT]
         # shuffle data
         if random_state is not None:
             self.data = self.data.sample(frac=1, random_state=random_state).reset_index(drop=True)
@@ -117,7 +122,7 @@ class IMetDataset(Dataset):
         # split dataset
         assert 0.0 <= split <= 1.0, f"split {split} is out of range"
         frac = int(split * len(self.data))
-        self.data = self.data[:frac] if mode == 'train' else self.data[frac:]
+        self.data = self.data[:frac] if mode == "train" else self.data[frac:]
         # need to reset after another split since it cached
         self._img_names = None
         self._raw_labels = None
@@ -126,7 +131,7 @@ class IMetDataset(Dataset):
     @property
     def img_names(self):
         if not self._img_names:
-            self._img_names = [f"{n}.png" if '.' not in n else n for n in self.data[self.COL_IMAGES]]
+            self._img_names = [f"{n}.png" if "." not in n else n for n in self.data[self.COL_IMAGES]]
         return self._img_names
 
     @property
@@ -151,7 +156,7 @@ class IMetDataset(Dataset):
         assert os.path.isfile(img_path)
         label = self.labels[idx]
         # todo: find some faster way, do conversion only if needed; im.mode not in ("L", "RGB")
-        img = load_image(img_path).convert('RGB')
+        img = load_image(img_path).convert("RGB")
 
         # augmentation
         if self.transforms:
@@ -166,12 +171,12 @@ class IMetDataset(Dataset):
 
 
 class IMetDM(LightningDataModule):
-    IMAGE_EXTENSIONS = ('.png', '.jpg', '.jpeg')
+    IMAGE_EXTENSIONS = (".png", ".jpg", ".jpeg")
 
     def __init__(
         self,
         base_path: str,
-        path_csv: str = 'train-from-kaggle.csv',
+        path_csv: str = "train-from-kaggle.csv",
         batch_size: int = 128,
         num_workers: int = None,
         train_transforms=TORCHVISION_TRAIN_TRANSFORM,
@@ -182,8 +187,8 @@ class IMetDM(LightningDataModule):
         super().__init__()
         # path configurations
         assert os.path.isdir(base_path), f"missing folder: {base_path}"
-        self.train_dir = os.path.join(base_path, 'train-1/train-1')
-        self.test_dir = os.path.join(base_path, 'test/test')
+        self.train_dir = os.path.join(base_path, "train-1/train-1")
+        self.test_dir = os.path.join(base_path, "test/test")
 
         if not os.path.isfile(path_csv):
             path_csv = os.path.join(base_path, path_csv)
@@ -222,7 +227,7 @@ class IMetDM(LightningDataModule):
         thr: float = 0.5,
         label_required: bool = True,
     ) -> Union[str, List[str]]:
-        """Convert Model outputs to string labels
+        """Convert Model outputs to string labels.
 
         Args:
             encoding: one-hot encoding
@@ -248,7 +253,7 @@ class IMetDM(LightningDataModule):
         with_sigm: bool = True,
         label_required: bool = True,
     ) -> Union[str, List[str]]:
-        """Convert Model outputs to string labels
+        """Convert Model outputs to string labels.
 
         Args:
             encoding: one-hot encoding
@@ -261,10 +266,10 @@ class IMetDM(LightningDataModule):
         return self.binary_mapping(encoding, self.lut_label, thr=thr, label_required=label_required)
 
     def setup(self, *_, **__) -> None:
-        """Prepare datasets"""
+        """Prepare datasets."""
         pbar = tqdm.tqdm(total=4)
         assert os.path.isdir(self.train_dir), f"missing folder: {self.train_dir}"
-        ds = IMetDataset(self.path_csv, self.train_dir, mode='train', split=1.0)
+        ds = IMetDataset(self.path_csv, self.train_dir, mode="train", split=1.0)
         self.labels_unique = ds.labels_unique
         self.lut_label = dict(enumerate(self.labels_unique))
         pbar.update()
@@ -277,25 +282,25 @@ class IMetDM(LightningDataModule):
             check_imgs=False,
             random_state=self.random_state,
         )
-        self.train_dataset = IMetDataset(**ds_defaults, mode='train', transforms=self.train_transforms)
+        self.train_dataset = IMetDataset(**ds_defaults, mode="train", transforms=self.train_transforms)
         logging.info(f"training dataset: {len(self.train_dataset)}")
         pbar.update()
-        self.valid_dataset = IMetDataset(**ds_defaults, mode='valid', transforms=self.valid_transforms)
+        self.valid_dataset = IMetDataset(**ds_defaults, mode="valid", transforms=self.valid_transforms)
         logging.info(f"validation dataset: {len(self.valid_dataset)}")
         pbar.update()
 
         if not os.path.isdir(self.test_dir):
             return
-        ls_images = glob.glob(os.path.join(self.test_dir, '*.*'))
+        ls_images = glob.glob(os.path.join(self.test_dir, "*.*"))
         ls_images = [os.path.basename(p) for p in ls_images if os.path.splitext(p)[-1] in self.IMAGE_EXTENSIONS]
-        self.test_table = [{'id': n, 'attribute_ids': ''} for n in ls_images]
+        self.test_table = [{"id": n, "attribute_ids": ""} for n in ls_images]
         self.test_dataset = IMetDataset(
             df_data=pd.DataFrame(self.test_table),
             path_img_dir=self.test_dir,
             split=0,
             uq_labels=self.labels_unique,
-            mode='test',
-            transforms=self.valid_transforms
+            mode="test",
+            transforms=self.valid_transforms,
         )
         logging.info(f"test dataset: {len(self.test_dataset)}")
         pbar.update()
@@ -324,4 +329,4 @@ class IMetDM(LightningDataModule):
                 num_workers=self.num_workers,
                 shuffle=False,
             )
-        logging.warning('no testing images found')
+        logging.warning("no testing images found")
