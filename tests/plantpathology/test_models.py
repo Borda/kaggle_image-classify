@@ -2,11 +2,11 @@ import os
 
 import pytest
 
-from kaggle_plantpatho.data import PlantPathologyDM
-from kaggle_plantpatho.models import LitPlantPathology, MultiPlantPathology
+from kaggle_plantpathology.data import PlantPathologyDM
+from kaggle_plantpathology.models import LitPlantPathology, MultiPlantPathology
 from pytorch_lightning import Trainer
 
-_PATH_HERE = os.path.dirname(__file__)
+from tests import _ROOT_TESTS
 
 
 @pytest.mark.parametrize("model_cls", [LitPlantPathology, MultiPlantPathology])
@@ -21,11 +21,11 @@ def test_create_model(model_cls, net: str = "resnet18"):
         (False, MultiPlantPathology),
     ],
 )
-def test_devel_run(tmpdir, ds_simple, model_cls, root_path=_PATH_HERE):
+def test_devel_run(tmpdir, ds_simple, model_cls, root_path=_ROOT_TESTS):
     """Sample fast dev run..."""
     dm = PlantPathologyDM(
-        path_csv=os.path.join(root_path, "data", "train.csv"),
-        base_path=os.path.join(root_path, "data"),
+        path_csv=os.path.join(root_path, "data_plant-pathology", "train.csv"),
+        base_path=os.path.join(root_path, "data_plant-pathology"),
         simple=ds_simple,
         batch_size=2,
         split=0.6,

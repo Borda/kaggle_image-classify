@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# coding: utf-8
 #
 # # Kaggle: Plant Pathology 2021 - FGVC8
 #
@@ -11,8 +10,8 @@
 import torch
 from pytorch_lightning.utilities.cli import LightningCLI
 
-from kaggle_plantpatho.data import PlantPathologyDM
-from kaggle_plantpatho.models import MultiPlantPathology
+from kaggle_plantpathology.data import PlantPathologyDM
+from kaggle_plantpathology.models import MultiPlantPathology
 
 TRAINER_DEFAULTS = dict(
     gpus=1,
@@ -28,7 +27,7 @@ TRAINER_DEFAULTS = dict(
 
 class TuneFitCLI(LightningCLI):
     def before_fit(self) -> None:
-        """Implement to run some code before fit is started"""
+        """Implement to run some code before fit is started."""
         res = self.trainer.tune(**self.fit_kwargs, scale_batch_size_kwargs=dict(max_trials=5))
         self.instantiate_classes()
         torch.cuda.empty_cache()

@@ -1,11 +1,7 @@
-import os
-
 import pytest
 import torch
 
-from kaggle_plantpatho.augment import LitAugmenter
-
-_PATH_HERE = os.path.dirname(__file__)
+from kaggle_plantpathology.augment import LitAugmenter
 
 
 @pytest.mark.parametrize("img_shape", [(1, 3, 192, 192), (2, 3, 224, 224)])

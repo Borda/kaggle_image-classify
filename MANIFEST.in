@@ -5,7 +5,6 @@ recursive-exclude __pycache__  *.py[cod] *.orig
 
 # Include the README and CHANGELOG
 include *.md
-recursive-include kaggle_plantpatho *.md
 recursive-include assets *.png *.jpg
 
 # Include the license file
@@ -15,9 +14,6 @@ exclude *.sh
 exclude *.toml
 exclude *.svg
 exclude *-app.py
-
-# Include the Requirements
-include requirements.txt
 
 # Exclude build configs
 exclude *.yml

@@ -15,6 +15,7 @@ jobs:
       matrix:
         os: [ubuntu-20.04, macOS-10.15, windows-2019]
         python-version: [3.7]
+        package: ["plantpathology"]
 
     # Timeout: https://stackoverflow.com/a/59076067/4521646
     timeout-minutes: 25
@@ -38,26 +39,27 @@ jobs:
       uses: actions/cache@v2
       with:
         path: ${{ steps.pip-cache.outputs.dir }}
-        key: ${{ runner.os }}-${{ matrix.python-version }}-pip-${{ hashFiles('requirements.txt') }}
+        key: ${{ runner.os }}-${{ matrix.python-version }}-${{ matrix.package }}-pip-${{ hashFiles('setup.cfg') }}
         restore-keys: |
-          ${{ runner.os }}-${{ matrix.python-version }}-pip-
+          ${{ runner.os }}-${{ matrix.python-version }}-${{ matrix.package }}-pip-
 
     - name: Install dependencies
       run: |
-        pip install --requirement requirements.txt --upgrade --find-links https://download.pytorch.org/whl/cpu/torch_stable.html
-        pip install --requirement tests/requirements.txt
+        pip install ".[test,${{ matrix.package }}]" --find-links https://download.pytorch.org/whl/cpu/torch_stable.html
         pip list
       shell: bash
 
     - name: Tests
+      env:
+        TEST_RESULTS: test-results-${{ runner.os }}-${{ matrix.python-version }}-${{ matrix.package }}.xml
       run: |
-        python -m pytest . -v --cov=kaggle_plantpatho --junitxml=junit/test-results-${{ runner.os }}-${{ matrix.python-version }}.xml
+        python -m pytest kaggle_${{ matrix.package }} tests/${{ matrix.package }} -v --cov=kaggle_${{ matrix.package }} --junitxml=junit/$TEST_RESULTS
 
     - name: Upload pytest test results
       uses: actions/upload-artifact@v2
       with:
-        name: pytest-results-${{ runner.os }}-${{ matrix.python-version }}
-        path: junit/test-results-${{ runner.os }}-${{ matrix.python-version }}.xml
+        name: pytest-results-${{ runner.os }}-${{ matrix.python-version }}-${{ matrix.package }}
+        path: junit/test-results-${{ runner.os }}-${{ matrix.python-version }}-${{ matrix.package }}.xml
       if: failure()
 
     - name: Statistics
@@ -73,5 +75,5 @@ jobs:
       continue-on-error: true
       with:
         file: coverage.xml
-        flags: cpu,pytest,python${{ matrix.python-version }}
+        flags: cpu,pytest,python${{ matrix.python-version }},${{ matrix.package }}
         fail_ci_if_error: false

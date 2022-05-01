@@ -1,5 +1,4 @@
-"""
-Simple StreamLit app fro plant classification
+"""Simple StreamLit app for plant classification.
 
 >> streamlit run streamlit-app.py
 """
@@ -10,9 +9,9 @@ import numpy as np
 import streamlit as st
 import torch
 
-from kaggle_plantpatho.augment import TORCHVISION_VALID_TRANSFORM
-from kaggle_plantpatho.data import PlantPathologyDM
-from kaggle_plantpatho.models import LitPlantPathology, MultiPlantPathology
+from kaggle_plantpathology.augment import TORCHVISION_VALID_TRANSFORM
+from kaggle_plantpathology.data import PlantPathologyDM
+from kaggle_plantpathology.models import LitPlantPathology, MultiPlantPathology
 from PIL import Image
 
 MODEL_PATH_GDRIVE = "https://drive.google.com/uc?id=1bynbFW0FpIt7fnqzImu2UIM1PHb9-yjw"
@@ -35,7 +34,7 @@ def get_model(model_path: str = MODEL_PATH_LOCAL) -> LitPlantPathology:
 
 def process_image(
     model: LitPlantPathology,
-    img_path: str = "tests/data/test_images/8a0d7cad7053f18d.jpg",
+    img_path: str = "tests/data_plant-pathology/test_images/8a0d7cad7053f18d.jpg",
     streamlit_app: bool = False,
 ):
     if not img_path:
