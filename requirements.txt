@@ -7,6 +7,9 @@ kornia>=0.5.2
 pandas
 matplotlib
 seaborn
+joblib
+Pillow>=8.2
+opencv-python  # bypass PIL if needed
 
 # CLI
 jsonargparse

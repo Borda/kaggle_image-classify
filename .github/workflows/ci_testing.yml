@@ -52,6 +52,7 @@ jobs:
     - name: Tests
       run: |
         python -m pytest . -v --cov=kaggle_plantpatho --junitxml=junit/test-results-${{ runner.os }}-${{ matrix.python-version }}.xml
+        python -m pytest . -v --cov=kaggle_imet --junitxml=junit/test-results-${{ runner.os }}-${{ matrix.python-version }}.xml
 
     - name: Upload pytest test results
       uses: actions/upload-artifact@v2
@@ -72,6 +73,7 @@ jobs:
       # see: https://github.com/actions/toolkit/issues/399
       continue-on-error: true
       with:
+        token: ${{ secrets.CODECOV_TOKEN }}
         file: coverage.xml
         flags: cpu,pytest,python${{ matrix.python-version }}
         fail_ci_if_error: false
