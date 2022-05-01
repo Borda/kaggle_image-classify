@@ -55,7 +55,7 @@ jobs:
       - name: Try installing
         working-directory: dist
         run: |
-          ls -l
+          ls
           pip install $(python -c "import glob ; print(' '.join(glob.glob('*.whl')))")
           pip show kaggle-image-classification
           python -c "import kaggle_plantpathology ;  print(kaggle_plantpathology.__version__)"
