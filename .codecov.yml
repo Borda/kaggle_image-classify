@@ -1,6 +1,6 @@
 # see https://docs.codecov.io/docs/codecov-yaml
 # Validation check:
-# $ curl --data_cassava-binary @.codecov.yml https://codecov.io/validate
+# $ curl --data-binary @.codecov.yml https://codecov.io/validate
 
 # https://docs.codecov.io/docs/codecovyml-reference
 codecov:

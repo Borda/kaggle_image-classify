@@ -1,9 +1,9 @@
 import torch
-import torchmetrics
 import torchvision
 from pytorch_lightning import LightningModule
 from torch import nn
 from torch.nn import functional as F
+from torchmetrics import Accuracy, F1Score
 
 
 class LitResnet(nn.Module):
@@ -32,8 +32,8 @@ class LitCassava(LightningModule):
     def __init__(self, model, num_classes: int = 5, lr: float = 1e-4):
         super().__init__()
         self.model = model
-        self.accuracy = torchmetrics.Accuracy()
-        self.f1_score = torchmetrics.F1(num_classes)
+        self.accuracy = Accuracy()
+        self.f1_score = F1Score(num_classes)
         self.learn_rate = lr
         self.loss_fn = F.cross_entropy
 
