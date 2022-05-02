@@ -115,7 +115,7 @@ class IMetDataset(Dataset):
             if nb_small_imgs:
                 logging.warning(f"found and dropped {nb_small_imgs} too small or invalid images :/")
             self.data = self.data[self.data["pixels"] >= self.IMAGE_SIZE_LIMIT]
-        # shuffle data
+        # shuffle data_cassava
         if random_state is not None:
             self.data = self.data.sample(frac=1, random_state=random_state).reset_index(drop=True)
 

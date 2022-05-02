@@ -13,6 +13,7 @@ exclude = "(.eggs|.git|.hg|.mypy_cache|.venv|_build|buck-out|build|dist)"
 known_first_party = [
     "kaggle_plantpathology",
     "kaggle_imetcollect",
+    "kaggle_cassava",
 ]
 skip_glob = []
 profile = "black"
