@@ -15,6 +15,27 @@ A simple way how to use this basic functions:
 ! pip install https://github.com/Borda/kaggle_image-classify/archive/main.zip
 ```
 
+## Kaggle: [Herbarium 2022](https://www.kaggle.com/competitions/herbarium-2022-fgvc9)
+
+The Herbarium 2022: Flora of North America dataset comprises 1.05 M images of 15,501 vascular plants, which constitute more than 90% of the taxa documented in North America. The provided dataset is constrained to include only vascular land plants (lycophytes, ferns, gymnosperms, and flowering plants) and it has a long-tail distribution. The number of images per taxon is as few as seven and as many as 100 images. Although more images are available.
+
+![Sample images](./assets/herbarium_sample-imgs.jpg)
+
+### run notebooks in Kaggle
+
+- [🌿Herbarium: EDA 🔎 & baseline Flash⚡EfficientNet](https://www.kaggle.com/code/jirkaborovec/herbarium-eda-baseline-flash-efficientnet)
+- [🌿Herbarium: Lightning⚡Flash (inference)](https://www.kaggle.com/code/jirkaborovec/herbarium-lightning-flash-inference)
+
+### run notebooks in Colab
+
+- [🌿Herbarium with Lit⚡Flash & EfficientNet](https://colab.research.google.com/github/Borda/kaggle_image-classify/blob/main/notebooks/Herbarium-with-Flash-EfficientNet.ipynb)
+
+### some results
+
+Training progress with EffNet-b3 with training  for 10 epochs:
+
+![Training process](./assets/herbarium_training-metrics.png)
+
 ## Kaggle: [Plant Pathology 2021 - FGVC8](https://www.kaggle.com/c/plant-pathology-2021-fgvc8)
 
 Foliar (leaf) diseases pose a major threat to the overall productivity and quality of apple orchards.
@@ -74,9 +95,6 @@ Training progress with ResNet50 with training for 35 epochs and subset labels wi
 
 ## Kaggle: [Cassava Leaf Disease Classification](https://www.kaggle.com/c/cassava-leaf-disease-classification/overview)
 
-![CI complete testing](https://github.com/Borda/kaggle_cassava-leaf-disease-classification/workflows/CI%20complete%20testing/badge.svg?branch=main&event=push)
-![Check Code formatting](https://github.com/Borda/kaggle_cassava-leaf-disease-classification/workflows/Check%20Code%20formatting/badge.svg?branch=main&event=push)
-
 The task is to classify each cassava image into five categories indicating - plant with a certain kind of disease or healthy leaf.
 
 Organizers introduced a dataset of 21,367 labeled images collected during a regular survey in Uganda. Most images were crowd-sourced from farmers taking photos of their gardens, and annotated by experts at the National Crops Resources Research Institute (NaCRRI) in collaboration with the AI lab at Makerere University, Kampala.
@@ -85,8 +103,8 @@ Organizers introduced a dataset of 21,367 labeled images collected during a regu
 
 ### run notebooks in Colab
 
-- [Cassava with Lightning](https://colab.research.google.com/github/Borda/kaggle_cassava-leaf-disease/blob/main/notebooks/Cassava_with_Lightning.ipynb)
-- [Cassava with Flash](https://colab.research.google.com/github/Borda/kaggle_cassava-leaf-disease/blob/main/notebooks/Cassava_with_Flash.ipynb)
+- [Cassava with Lightning](https://colab.research.google.com/github/Borda/kaggle_image-classify/blob/main/notebooks/Cassava_with_Lightning.ipynb)
+- [Cassava with Flash](https://colab.research.google.com/github/Borda/kaggle_image-classify/blob/main/notebooks/Cassava_with_Flash.ipynb)
 
 I would recommend uploading the dataset to you personal gDrive and then in notebooks connect the gDrive which saves you lost of time with re-uploading dataset when ever your Colab is reset... :\]
 
