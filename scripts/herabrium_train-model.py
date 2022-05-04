@@ -38,19 +38,37 @@ class ImageClassificationInputTransform(InputTransform):
     def train_input_per_sample_transform(self):
         return T.Compose(
             [
+                T.TrivialAugmentWide(),
+                T.RandomPosterize(bits=2),
                 T.ToTensor(),
                 T.Resize(self.image_size),
-                T.Normalize(self.image_color_mean, self.image_color_std),
                 T.RandomHorizontalFlip(),
+                # T.RandomEqualize(),
+                # T.ColorJitter(brightness=0.2, hue=0.1),
+                T.RandomAutocontrast(),
+                T.RandomAdjustSharpness(sharpness_factor=2),
+                T.GaussianBlur(kernel_size=(5, 9), sigma=(0.1, 5)),
                 T.RandomAffine(degrees=10, scale=(0.9, 1.1), translate=(0.1, 0.1)),
-                # T.ColorJitter(),
-                # T.RandomAutocontrast(),
                 # T.RandomPerspective(distortion_scale=0.1),
+                T.Normalize(self.image_color_mean, self.image_color_std),
             ]
         )
 
     def target_per_sample_transform(self) -> Callable:
         return torch.as_tensor
+
+
+def load_df_train(dataset_dir: str) -> pd.DataFrame:
+    with open(os.path.join(dataset_dir, "train_metadata.json")) as fp:
+        train_data = json.load(fp)
+    train_annotations = pd.DataFrame(train_data["annotations"])
+    train_images = pd.DataFrame(train_data["images"]).set_index("image_id")
+    train_categories = pd.DataFrame(train_data["categories"]).set_index("category_id")
+    train_institutions = pd.DataFrame(train_data["institutions"]).set_index("institution_id")
+    df_train = pd.merge(train_annotations, train_images, how="left", right_index=True, left_on="image_id")
+    df_train = pd.merge(df_train, train_categories, how="left", right_index=True, left_on="category_id")
+    df_train = pd.merge(df_train, train_institutions, how="left", right_index=True, left_on="institution_id")
+    return df_train
 
 
 def main(
@@ -64,6 +82,7 @@ def main(
     image_size: int = 300,
     lr_scheduler: Optional[str] = None,
     learning_rate: float = 5e-3,
+    label_smoothing: float = 0.01,
     max_epochs: int = 20,
     gpus: int = 1,
     val_split: float = 0.1,
@@ -71,15 +90,7 @@ def main(
     early_stopping: Optional[float] = None,
     swa: Optional[float] = None,
 ) -> None:
-    with open(os.path.join(dataset_dir, "train_metadata.json")) as fp:
-        train_data = json.load(fp)
-    train_annotations = pd.DataFrame(train_data["annotations"])
-    train_images = pd.DataFrame(train_data["images"]).set_index("image_id")
-    train_categories = pd.DataFrame(train_data["categories"]).set_index("category_id")
-    train_institutions = pd.DataFrame(train_data["institutions"]).set_index("institution_id")
-    df_train = pd.merge(train_annotations, train_images, how="left", right_index=True, left_on="image_id")
-    df_train = pd.merge(df_train, train_categories, how="left", right_index=True, left_on="category_id")
-    df_train = pd.merge(df_train, train_institutions, how="left", right_index=True, left_on="institution_id")
+    df_train = load_df_train(dataset_dir)
 
     datamodule = ImageClassificationData.from_data_frame(
         input_field="file_name",
@@ -99,7 +110,7 @@ def main(
         backbone=model_backbone,
         metrics=F1Score(num_classes=datamodule.num_classes),
         pretrained=model_pretrained,
-        loss_fn=LabelSmoothingCrossEntropy(0.05),
+        loss_fn=LabelSmoothingCrossEntropy(label_smoothing),
         optimizer=optimizer,
         learning_rate=learning_rate,
         lr_scheduler=lr_scheduler,
@@ -119,7 +130,7 @@ def main(
     trainer = flash.Trainer(
         callbacks=cbs,
         max_epochs=max_epochs,
-        # precision="bf16",
+        precision="bf16" if gpus else 32,
         gpus=gpus,
         accelerator="ddp" if gpus > 1 else None,
         benchmark=True,
@@ -129,12 +140,12 @@ def main(
 
     # Train the model
     # trainer.finetune(model, datamodule=datamodule, strategy="no_freeze")
-    trainer.finetune(model, datamodule=datamodule, strategy=("freeze_unfreeze", 5))
+    trainer.finetune(model, datamodule=datamodule, strategy=("freeze_unfreeze", 2))
 
     trainer.save_checkpoint("image_classification_model.pt")
 
     # Save the model!
-    checkpoint_name = f"tract-segm-{log_id}_{model_backbone}.pt"
+    checkpoint_name = f"tract-segm-{log_id}_{model_backbone}-{image_size}px.pt"
     trainer.save_checkpoint(os.path.join(checkpoints_dir, checkpoint_name))
 
 
