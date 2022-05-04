@@ -2,7 +2,7 @@ import json
 import os
 
 from dataclasses import dataclass
-from typing import Callable, Optional, Tuple
+from typing import Any, Callable, Dict, Optional, Tuple
 
 import fire
 
@@ -86,9 +86,9 @@ def main(
     max_epochs: int = 20,
     gpus: int = 1,
     val_split: float = 0.1,
-    accumulate_grad_batches: int = 1,
     early_stopping: Optional[float] = None,
     swa: Optional[float] = None,
+    **trainer_kwargs: Dict[str, Any],
 ) -> None:
     df_train = load_df_train(dataset_dir)
 
@@ -133,9 +133,8 @@ def main(
         precision="bf16" if gpus else 32,
         gpus=gpus,
         accelerator="ddp" if gpus > 1 else None,
-        benchmark=True,
         logger=logger,
-        accumulate_grad_batches=accumulate_grad_batches,
+        **trainer_kwargs,
     )
 
     # Train the model
