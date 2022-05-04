@@ -1,6 +1,6 @@
 """Create a subset with more frequent labels.
 
-> python notebooks/imet-create-dataset-subset.py TEMP/train-from-kaggle.csv 1500
+> python notebooks/imet_create-dataset-subset.py TEMP/train-from-kaggle.csv 1500
 """
 
 import itertools
