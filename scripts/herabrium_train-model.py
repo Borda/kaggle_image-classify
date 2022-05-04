@@ -14,6 +14,7 @@ from flash.image import ImageClassificationData, ImageClassifier
 
 from pytorch_lightning.callbacks import EarlyStopping, ModelCheckpoint, StochasticWeightAveraging
 from pytorch_lightning.loggers import WandbLogger
+from timm.loss import LabelSmoothingCrossEntropy
 from torchmetrics import F1Score
 from torchvision import transforms as T
 
@@ -65,6 +66,7 @@ def main(
     learning_rate: float = 5e-3,
     max_epochs: int = 20,
     gpus: int = 1,
+    val_split: float = 0.1,
     accumulate_grad_batches: int = 1,
     early_stopping: Optional[float] = None,
     swa: Optional[float] = None,
@@ -87,15 +89,17 @@ def main(
         # train_data_frame=df_train[:len(df_train) // 2],
         train_images_root=os.path.join(dataset_dir, "train_images"),
         train_transform=ImageClassificationInputTransform,
+        transform_kwargs={"image_size": (image_size, image_size)},
         batch_size=batch_size,
         num_workers=num_workers,
-        transform_kwargs={"image_size": (image_size, image_size)},
+        val_split=val_split,
     )
 
     model = ImageClassifier(
         backbone=model_backbone,
         metrics=F1Score(num_classes=datamodule.num_classes),
         pretrained=model_pretrained,
+        loss_fn=LabelSmoothingCrossEntropy(0.05),
         optimizer=optimizer,
         learning_rate=learning_rate,
         lr_scheduler=lr_scheduler,
