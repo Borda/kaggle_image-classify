@@ -1,17 +1,14 @@
 import json
 import os
-
 from dataclasses import dataclass
 from typing import Any, Callable, Dict, Optional, Tuple
 
 import fire
-
 import flash
 import pandas as pd
 import torch
 from flash.core.data.io.input_transform import InputTransform
 from flash.image import ImageClassificationData, ImageClassifier
-
 from pytorch_lightning.callbacks import EarlyStopping, ModelCheckpoint, StochasticWeightAveraging
 from pytorch_lightning.loggers import WandbLogger
 from timm.loss import LabelSmoothingCrossEntropy
