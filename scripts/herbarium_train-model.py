@@ -90,6 +90,7 @@ def main(
     swa: Optional[float] = None,
     **trainer_kwargs: Dict[str, Any],
 ) -> None:
+    print(f"Additional Trainer args: {trainer_kwargs}")
     df_train = load_df_train(dataset_dir)
 
     datamodule = ImageClassificationData.from_data_frame(
@@ -144,7 +145,7 @@ def main(
     trainer.save_checkpoint("image_classification_model.pt")
 
     # Save the model!
-    checkpoint_name = f"tract-segm-{log_id}_{model_backbone}-{image_size}px.pt"
+    checkpoint_name = f"herbarium-classif-{log_id}_{model_backbone}-{image_size}px.pt"
     trainer.save_checkpoint(os.path.join(checkpoints_dir, checkpoint_name))
 
 
