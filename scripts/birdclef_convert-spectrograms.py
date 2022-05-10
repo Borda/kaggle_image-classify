@@ -94,9 +94,11 @@ def convert_and_export(
     if not sgs:
         print(f"Too short audio for: {path_audio}")
         return
+    path_npz = os.path.join(path_out, fn + ".npz")
+    os.makedirs(os.path.dirname(path_npz), exist_ok=True)
+    np.savez_compressed(path_npz, sgs)
     for i, sg in enumerate(sgs):
         path_img = os.path.join(path_out, fn + f".{i:03}" + img_extension)
-        os.makedirs(os.path.dirname(path_img), exist_ok=True)
         try:
             if img_extension == ".png":
                 sg = np.clip((sg + 70) / 90.0 * 255, a_min=0, a_max=255)
@@ -115,8 +117,8 @@ def _color_means(img_path):
     img = plt.imread(img_path)
     if np.max(img) > 1.5:
         img = img / 255.0
-    clr_mean = np.mean(img)
-    clr_std = np.std(img)
+    clr_mean = np.mean(img) if img.ndim == 2 else {i: np.mean(img[..., i]) for i in range(3)}
+    clr_std = np.std(img) if img.ndim == 2 else {i: np.std(img[..., i]) for i in range(3)}
     return clr_mean, clr_std
 
 

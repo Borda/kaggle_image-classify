@@ -20,15 +20,15 @@ from torchvision import transforms as T
 class ImageClassificationInputTransform(InputTransform):
 
     image_size: Tuple[int, int] = (224, 224)
-    image_color_mean: Tuple[float, float] = (0.781, 0.759, 0.710)
-    image_color_std: Tuple[float, float] = (0.241, 0.245, 0.249)
+    color_mean: Tuple[float, float, float] = (0.781, 0.759, 0.710)
+    color_std: Tuple[float, float, float] = (0.241, 0.245, 0.249)
 
     def input_per_sample_transform(self):
         return T.Compose(
             [
                 T.ToTensor(),
                 T.Resize(self.image_size),
-                T.Normalize(self.image_color_mean, self.image_color_std),
+                T.Normalize(self.color_mean, self.color_std),
             ]
         )
 
@@ -47,7 +47,7 @@ class ImageClassificationInputTransform(InputTransform):
                 T.GaussianBlur(kernel_size=(5, 9), sigma=(0.1, 5)),
                 T.RandomAffine(degrees=10, scale=(0.9, 1.1), translate=(0.1, 0.1)),
                 # T.RandomPerspective(distortion_scale=0.1),
-                T.Normalize(self.image_color_mean, self.image_color_std),
+                T.Normalize(self.color_mean, self.color_std),
             ]
         )
 
@@ -76,7 +76,7 @@ def main(
     model_backbone: str = "efficientnet_b3",
     model_pretrained: bool = False,
     optimizer: str = "AdamW",
-    image_size: int = 300,
+    image_size: int = 320,
     lr_scheduler: Optional[str] = None,
     learning_rate: float = 5e-3,
     label_smoothing: float = 0.01,
@@ -98,6 +98,7 @@ def main(
         # train_data_frame=df_train[:len(df_train) // 2],
         train_images_root=os.path.join(dataset_dir, "train_images"),
         train_transform=ImageClassificationInputTransform,
+        val_transform=ImageClassificationInputTransform,
         transform_kwargs={"image_size": (image_size, image_size)},
         batch_size=batch_size,
         num_workers=num_workers,
@@ -106,7 +107,7 @@ def main(
 
     model = ImageClassifier(
         backbone=model_backbone,
-        metrics=F1Score(num_classes=datamodule.num_classes),
+        metrics=F1Score(num_classes=datamodule.num_classes, average="macro"),
         pretrained=model_pretrained,
         loss_fn=LabelSmoothingCrossEntropy(label_smoothing),
         optimizer=optimizer,
