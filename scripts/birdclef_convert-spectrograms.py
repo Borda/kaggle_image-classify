@@ -76,6 +76,7 @@ def convert_and_export(
     device="cpu",
     batch_size=2,
     img_extension: str = ".png",
+    img_size: int = 512,
 ) -> None:
     path_audio = os.path.join(path_in, fn)
     try:
@@ -97,9 +98,14 @@ def convert_and_export(
         path_img = os.path.join(path_out, fn + f".{i:03}" + img_extension)
         os.makedirs(os.path.dirname(path_img), exist_ok=True)
         try:
-            # plt.imsave(path_img, sg, vmin=-70, vmax=20)
-            sg = np.clip((sg + 70) / 90.0 * 255, a_min=0, a_max=255)
-            Image.fromarray(sg.astype(np.uint8)).save(path_img)
+            if img_extension == ".png":
+                sg = np.clip((sg + 70) / 90.0 * 255, a_min=0, a_max=255)
+                img = Image.fromarray(sg.astype(np.uint8))
+                if img_size:
+                    img = img.resize((img_size, img_size))
+                img.save(path_img)
+            else:
+                plt.imsave(path_img, sg, vmin=-70, vmax=20)
         except Exception:
             print(f"Failed exporting for image: {path_img}")
             continue
@@ -114,7 +120,7 @@ def _color_means(img_path):
     return clr_mean, clr_std
 
 
-def main(path_dataset: str, img_extension: str = ".png", use_gpu: bool = False, n_jobs: int = 12):
+def main(path_dataset: str, img_extension: str = ".png", img_size: int = 512, use_gpu: bool = False, n_jobs: int = 12):
     train_meta = pd.read_csv(os.path.join(path_dataset, "train_metadata.csv")).sample(frac=1)
     print(train_meta.head())
 
@@ -126,6 +132,7 @@ def main(path_dataset: str, img_extension: str = ".png", use_gpu: bool = False, 
         device="cuda" if use_gpu else "cpu",
         batch_size=3 if use_gpu else 1,
         img_extension=img_extension,
+        img_size=img_size,
     )
 
     _ = Parallel(n_jobs=n_jobs)(delayed(_convert_and_export)(fn) for fn in tqdm(train_meta["filename"]))
