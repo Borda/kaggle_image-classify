@@ -61,8 +61,9 @@ def create_spectrogram(
     dl = DataLoader(frames, batch_size=batch_size)
     spectrograms = []
     for batch in dl:
-        sgs = torch.log(transform(torch.tensor(batch, device=device))).cpu()
-        spectrograms += [np.nan_to_num(sgs.numpy())[i, ...] for i in range(sgs.shape[0])]
+        sgs = torch.log(transform(batch.to(device))).cpu()
+        sgs = np.nan_to_num(sgs.numpy())
+        spectrograms += [sgs[i, ...] for i in range(sgs.shape[0])]
     return spectrograms
 
 
@@ -88,28 +89,29 @@ def convert_and_export(
             device=device,
             batch_size=batch_size,
         )
-    except Exception:
-        print(f"Failed conversion for audio: {path_audio}")
+    except Exception as ex:
+        print(f"Failed conversion for audio: {path_audio}\n with {ex}")
         return
     if not sgs:
         print(f"Too short audio for: {path_audio}")
         return
     path_npz = os.path.join(path_out, fn + ".npz")
     os.makedirs(os.path.dirname(path_npz), exist_ok=True)
-    np.savez_compressed(path_npz, sgs)
+    np.savez_compressed(path_npz, np.array(sgs, dtype=np.float16))
     for i, sg in enumerate(sgs):
         path_img = os.path.join(path_out, fn + f".{i:03}" + img_extension)
         try:
             if img_extension == ".png":
-                sg = np.clip((sg + 70) / 90.0 * 255, a_min=0, a_max=255)
+                sg = (sg + 70) / 90.0
+                sg = np.clip(sg, a_min=0, a_max=1) * 255
                 img = Image.fromarray(sg.astype(np.uint8))
                 if img_size:
                     img = img.resize((img_size, img_size))
                 img.save(path_img)
             else:
                 plt.imsave(path_img, sg, vmin=-70, vmax=20)
-        except Exception:
-            print(f"Failed exporting for image: {path_img}")
+        except Exception as ex:
+            print(f"Failed exporting for image: {path_img}\n with {ex}")
             continue
 
 
