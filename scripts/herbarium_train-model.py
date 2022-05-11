@@ -68,6 +68,32 @@ def load_df_train(dataset_dir: str) -> pd.DataFrame:
     return df_train
 
 
+def inference(trainer, model, df_test: pd.DataFrame, dataset_dir: str) -> pd.DataFrame:
+    print(f"inference for {len(df_test)} images")
+    print(df_test.head())
+
+    datamodule = ImageClassificationData.from_data_frame(
+        input_field="file_name",
+        # target_fields="category_id",
+        predict_data_frame=df_test,
+        # for simplicity take just fraction of the data
+        # predict_data_frame=test_images[:len(test_images) // 100],
+        predict_images_root=os.path.join(dataset_dir, "test_images"),
+        predict_transform=ImageClassificationInputTransform,
+        batch_size=16,
+        transform_kwargs={"image_size": (384, 384)},
+        num_workers=6,
+    )
+
+    predictions = []
+    for lbs in trainer.predict(model, datamodule=datamodule, output="labels"):
+        # lbs = [torch.argmax(p["preds"].float()).item() for p in preds]
+        predictions += lbs
+
+    submission = pd.DataFrame({"Id": df_test.index, "Predicted": predictions}).set_index("Id")
+    return submission
+
+
 def main(
     dataset_dir: str = "/home/jirka/Datasets/herbarium-2022-fgvc9",
     checkpoints_dir: str = "/home/jirka/Workspace/checkpoints_herbarium-flash",
@@ -85,10 +111,15 @@ def main(
     val_split: float = 0.1,
     early_stopping: Optional[float] = None,
     swa: Optional[float] = None,
+    run_inference: bool = True,
     **trainer_kwargs: Dict[str, Any],
 ) -> None:
     print(f"Additional Trainer args: {trainer_kwargs}")
     df_train = load_df_train(dataset_dir)
+
+    with open(os.path.join(dataset_dir, "test_metadata.json")) as fp:
+        test_data = json.load(fp)
+    df_test = pd.DataFrame(test_data).set_index("image_id")
 
     datamodule = ImageClassificationData.from_data_frame(
         input_field="file_name",
@@ -140,11 +171,14 @@ def main(
     # trainer.finetune(model, datamodule=datamodule, strategy="no_freeze")
     trainer.finetune(model, datamodule=datamodule, strategy=("freeze_unfreeze", 2))
 
-    trainer.save_checkpoint("image_classification_model.pt")
-
     # Save the model!
     checkpoint_name = f"herbarium-classif-{log_id}_{model_backbone}-{image_size}px.pt"
     trainer.save_checkpoint(os.path.join(checkpoints_dir, checkpoint_name))
+
+    if run_inference:
+        submission = inference(trainer, model, df_test, dataset_dir)
+        submission_name = f"submission_herbarium-{log_id}_{model_backbone}-{image_size}.csv"
+        submission.to_csv(os.path.join(checkpoints_dir, submission_name))
 
 
 if __name__ == "__main__":
