@@ -61,3 +61,4 @@ jobs:
           python -c "import kaggle_plantpathology ;  print(kaggle_plantpathology.__version__)"
           python -c "import kaggle_imetcollect ; print(kaggle_imetcollect.__version__)"
           python -c "import kaggle_cassava ; print(kaggle_cassava.__version__)"
+          python -c "import kaggle_birdclef ; print(kaggle_birdclef.__version__)"

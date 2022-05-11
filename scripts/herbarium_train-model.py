@@ -68,7 +68,7 @@ def load_df_train(dataset_dir: str) -> pd.DataFrame:
     return df_train
 
 
-def inference(trainer, model, df_test: pd.DataFrame, dataset_dir: str) -> pd.DataFrame:
+def inference(model, df_test: pd.DataFrame, dataset_dir: str, gpus: int = 0) -> pd.DataFrame:
     print(f"inference for {len(df_test)} images")
     print(df_test.head())
 
@@ -85,11 +85,14 @@ def inference(trainer, model, df_test: pd.DataFrame, dataset_dir: str) -> pd.Dat
         num_workers=6,
     )
 
+    trainer = flash.Trainer(gpus=min(gpus, 1))
+
     predictions = []
     for lbs in trainer.predict(model, datamodule=datamodule, output="labels"):
         # lbs = [torch.argmax(p["preds"].float()).item() for p in preds]
         predictions += lbs
 
+    print(f"Predictions: {len(predictions)} & Test images: {len(df_test)}")
     submission = pd.DataFrame({"Id": df_test.index, "Predicted": predictions}).set_index("Id")
     return submission
 
@@ -135,6 +138,7 @@ def main(
         num_workers=num_workers,
         val_split=val_split,
     )
+    datamodule.multi_label
 
     model = ImageClassifier(
         backbone=model_backbone,
@@ -176,7 +180,7 @@ def main(
     trainer.save_checkpoint(os.path.join(checkpoints_dir, checkpoint_name))
 
     if run_inference:
-        submission = inference(trainer, model, df_test, dataset_dir)
+        submission = inference(model, df_test, dataset_dir, gpus)
         submission_name = f"submission_herbarium-{log_id}_{model_backbone}-{image_size}.csv"
         submission.to_csv(os.path.join(checkpoints_dir, submission_name))
 
