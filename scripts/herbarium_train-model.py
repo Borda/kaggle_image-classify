@@ -138,7 +138,6 @@ def main(
         num_workers=num_workers,
         val_split=val_split,
     )
-    datamodule.multi_label
 
     model = ImageClassifier(
         backbone=model_backbone,
@@ -179,7 +178,7 @@ def main(
     checkpoint_name = f"herbarium-classif-{log_id}_{model_backbone}-{image_size}px.pt"
     trainer.save_checkpoint(os.path.join(checkpoints_dir, checkpoint_name))
 
-    if run_inference:
+    if run_inference and trainer.is_global_zero:
         submission = inference(model, df_test, dataset_dir, gpus)
         submission_name = f"submission_herbarium-{log_id}_{model_backbone}-{image_size}.csv"
         submission.to_csv(os.path.join(checkpoints_dir, submission_name))

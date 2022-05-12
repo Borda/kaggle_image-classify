@@ -2,10 +2,10 @@ import os
 
 import pytest
 import torch
-
-from kaggle_imetcollect.data import IMetDataset, IMetDM
 from PIL import Image
 from torch import tensor
+
+from kaggle_imetcollect.data import IMetDataset, IMetDM
 
 from tests import _ROOT_TESTS
 

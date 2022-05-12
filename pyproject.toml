@@ -9,7 +9,7 @@ requires = [
 line-length = 120
 exclude = "(.eggs|.git|.hg|.mypy_cache|.venv|_build|buck-out|build|dist)"
 
-[tool.isort]
+[tool.usort]
 known_first_party = [
     "kaggle_plantpathology",
     "kaggle_imetcollect",

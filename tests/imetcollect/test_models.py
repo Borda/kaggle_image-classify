@@ -1,10 +1,10 @@
 import os
 
 import timm
+from pytorch_lightning import Trainer
 
 from kaggle_imetcollect.data import IMetDM
 from kaggle_imetcollect.models import LitMet, LitResnet
-from pytorch_lightning import Trainer
 
 from tests import _ROOT_TESTS
 

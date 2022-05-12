@@ -1,10 +1,10 @@
 import os
 
 import pytest
+from pytorch_lightning import Trainer
 
 from kaggle_plantpathology.data import PlantPathologyDM
 from kaggle_plantpathology.models import LitPlantPathology, MultiPlantPathology
-from pytorch_lightning import Trainer
 
 from tests import _ROOT_TESTS
 

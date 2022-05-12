@@ -8,11 +8,11 @@ import gdown
 import numpy as np
 import streamlit as st
 import torch
+from PIL import Image
 
 from kaggle_plantpathology.augment import TORCHVISION_VALID_TRANSFORM
 from kaggle_plantpathology.data import PlantPathologyDM
 from kaggle_plantpathology.models import LitPlantPathology, MultiPlantPathology
-from PIL import Image
 
 MODEL_PATH_GDRIVE = "https://drive.google.com/uc?id=1bynbFW0FpIt7fnqzImu2UIM1PHb9-yjw"
 MODEL_PATH_LOCAL = "fgvc8_resnet50.pt"

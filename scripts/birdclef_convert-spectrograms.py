@@ -7,9 +7,9 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 from joblib import delayed, Parallel
+from tqdm.auto import tqdm
 
 from kaggle_birdclef.data import convert_and_export
-from tqdm.auto import tqdm
 
 
 def _color_means(img_path):

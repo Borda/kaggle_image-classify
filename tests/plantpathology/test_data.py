@@ -2,9 +2,9 @@ import os
 
 import numpy
 import pytest
+from torch import Tensor
 
 from kaggle_plantpathology.data import PlantPathologyDataset, PlantPathologyDM, PlantPathologySimpleDataset
-from torch import Tensor
 
 from tests import _ROOT_TESTS
 
