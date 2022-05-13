@@ -6,7 +6,9 @@ from pytorch_lightning import Trainer
 from kaggle_imgclassif.plant_pathology.data import PlantPathologyDM
 from kaggle_imgclassif.plant_pathology.models import LitPlantPathology, MultiPlantPathology
 
-from tests import _ROOT_TESTS
+from tests import _ROOT_DATA
+
+PATH_DATA = os.path.join(_ROOT_DATA, "plant-pathology")
 
 
 @pytest.mark.parametrize("model_cls", [LitPlantPathology, MultiPlantPathology])
@@ -21,11 +23,11 @@ def test_create_model(model_cls, net: str = "resnet18"):
         (False, MultiPlantPathology),
     ],
 )
-def test_devel_run(tmpdir, ds_simple, model_cls, root_path=_ROOT_TESTS):
+def test_devel_run(tmpdir, ds_simple, model_cls, path_data=PATH_DATA):
     """Sample fast dev run..."""
     dm = PlantPathologyDM(
-        path_csv=os.path.join(root_path, "data_plant-pathology", "train.csv"),
-        base_path=os.path.join(root_path, "data_plant-pathology"),
+        path_csv=os.path.join(path_data, "train.csv"),
+        base_path=path_data,
         simple=ds_simple,
         batch_size=2,
         split=0.6,

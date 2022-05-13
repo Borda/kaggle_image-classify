@@ -34,7 +34,7 @@ def get_model(model_path: str = MODEL_PATH_LOCAL) -> LitPlantPathology:
 
 def process_image(
     model: LitPlantPathology,
-    img_path: str = "tests/data_plant-pathology/test_images/8a0d7cad7053f18d.jpg",
+    img_path: str = "tests/_data/plant-pathology/test_images/8a0d7cad7053f18d.jpg",
     streamlit_app: bool = False,
 ):
     if not img_path:
