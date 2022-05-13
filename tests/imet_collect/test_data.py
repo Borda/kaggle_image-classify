@@ -5,7 +5,7 @@ import torch
 from PIL import Image
 from torch import tensor
 
-from kaggle_imetcollect.data import IMetDataset, IMetDM
+from kaggle_imgclassif.imet_collect.data import IMetDataset, IMetDM
 
 from tests import _ROOT_DATA
 

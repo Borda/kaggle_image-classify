@@ -2,7 +2,7 @@ import os
 
 import numpy
 
-from kaggle_cassava.data import CassavaDataModule, CassavaDataset
+from kaggle_imgclassif.cassava.data import CassavaDataModule, CassavaDataset
 
 from tests import _ROOT_DATA
 

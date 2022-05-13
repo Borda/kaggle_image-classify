@@ -2,8 +2,9 @@ import os
 
 from pytorch_lightning import Trainer
 
-from kaggle_cassava.data import CassavaDataModule
-from kaggle_cassava.models import LitCassava, LitMobileNet, LitResnet
+from kaggle_imgclassif.cassava.data import CassavaDataModule
+
+from kaggle_imgclassif.cassava.models import LitCassava, LitMobileNet, LitResnet
 
 from tests import _ROOT_DATA
 

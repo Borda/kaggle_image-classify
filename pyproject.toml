@@ -12,9 +12,9 @@ exclude = "(.eggs|.git|.hg|.mypy_cache|.venv|_build|buck-out|build|dist)"
 [tool.usort]
 known_first_party = [
     "kaggle_imgclassif",
-    "kaggle_imetcollect",
-    "kaggle_cassava",
-    "kaggle_birdclef",
+    "imet_collect",
+    "cassava",
+    "birdclef",
 ]
 skip_glob = []
 profile = "black"

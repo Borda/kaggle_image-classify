@@ -9,7 +9,7 @@ import pandas as pd
 from joblib import delayed, Parallel
 from tqdm.auto import tqdm
 
-from kaggle_birdclef.data import convert_and_export
+from kaggle_imgclassif.birdclef.data import convert_and_export
 
 
 def _color_means(img_path):

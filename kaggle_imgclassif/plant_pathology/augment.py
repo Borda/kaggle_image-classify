@@ -10,7 +10,7 @@ from PIL import Image
 from torch import Tensor
 from torchvision import transforms as T
 
-from kaggle_imgclassif import DATASET_IMAGE_MEAN, DATASET_IMAGE_STD
+from kaggle_imgclassif.plant_pathology import DATASET_IMAGE_MEAN, DATASET_IMAGE_STD
 
 #: default training augmentation
 TORCHVISION_TRAIN_TRANSFORM = T.Compose(
