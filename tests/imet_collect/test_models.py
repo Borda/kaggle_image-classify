@@ -6,7 +6,9 @@ from pytorch_lightning import Trainer
 from kaggle_imetcollect.data import IMetDM
 from kaggle_imetcollect.models import LitMet, LitResnet
 
-from tests import _ROOT_TESTS
+from tests import _ROOT_DATA
+
+PATH_DATA = os.path.join(_ROOT_DATA, "imet-collect")
 
 
 def test_create_resnet():
@@ -18,11 +20,11 @@ def test_create_model():
     LitMet(model=net, num_classes=5)
 
 
-def test_devel_run(tmpdir, root_path=_ROOT_TESTS):
+def test_devel_run(tmpdir, path_data=PATH_DATA):
     """Sample fast dev run..."""
     dm = IMetDM(
-        path_csv=os.path.join(root_path, "data_imet-collect", "train-from-kaggle.csv"),
-        base_path=os.path.join(root_path, "data_imet-collect"),
+        path_csv=os.path.join(path_data, "train-from-kaggle.csv"),
+        base_path=path_data,
         batch_size=2,
         split=0.6,
     )

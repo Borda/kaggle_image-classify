@@ -5,7 +5,10 @@ from pytorch_lightning import Trainer
 from kaggle_cassava.data import CassavaDataModule
 from kaggle_cassava.models import LitCassava, LitMobileNet, LitResnet
 
-from tests import _ROOT_TESTS
+from tests import _ROOT_DATA
+
+
+PATH_DATA = os.path.join(_ROOT_DATA, "cassava")
 
 
 def test_create_resnet():
@@ -21,11 +24,11 @@ def test_create_model():
     LitCassava(model=net)
 
 
-def test_devel_run(tmpdir, root_path=_ROOT_TESTS):
+def test_devel_run(tmpdir, path_data=PATH_DATA):
     """Sample fast dev run..."""
     dm = CassavaDataModule(
-        path_csv=os.path.join(root_path, "data_cassava", "train.csv"),
-        path_img_dir=os.path.join(root_path, "data_cassava", "train_images"),
+        path_csv=os.path.join(path_data, "train.csv"),
+        path_img_dir=os.path.join(path_data, "train_images"),
         batch_size=1,
         split=0.6,
     )
