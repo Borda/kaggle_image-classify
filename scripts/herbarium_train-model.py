@@ -1,3 +1,14 @@
+"""Sample execution on A100.
+
+>> python3 scripts/herbarium_train-model.py --gpus 6 --max_epochs 30 --val_split 0.05 \
+    --learning_rate 0.01 --model_backbone convnext_base_384_in22ft1k --image_size 384 --model_pretrained True \
+    --batch_size 72 --accumulate_grad_batches=12
+
+>> python3 scripts/herbarium_train-model.py --gpus 6 --max_epochs 30 --val_split 0.05 \
+    --learning_rate 0.01 --model_backbone dm_nfnet_f3 --image_size 416 --model_pretrained True \
+    --batch_size 18 --accumulate_grad_batches=48
+"""
+
 import json
 import os
 from dataclasses import dataclass
@@ -101,7 +112,6 @@ def main(
     dataset_dir: str = "/home/jirka/Datasets/herbarium-2022-fgvc9",
     checkpoints_dir: str = "/home/jirka/Workspace/checkpoints_herbarium-flash",
     batch_size: int = 24,
-    num_workers: int = 12,
     model_backbone: str = "efficientnet_b3",
     model_pretrained: bool = False,
     optimizer: str = "AdamW",
@@ -114,6 +124,7 @@ def main(
     val_split: float = 0.1,
     early_stopping: Optional[float] = None,
     swa: Optional[float] = None,
+    num_workers: int = None,
     run_inference: bool = True,
     **trainer_kwargs: Dict[str, Any],
 ) -> None:
@@ -135,7 +146,7 @@ def main(
         val_transform=ImageClassificationInputTransform,
         transform_kwargs={"image_size": (image_size, image_size)},
         batch_size=batch_size,
-        num_workers=num_workers,
+        num_workers=num_workers if num_workers else min(batch_size, int(os.cpu_count() / gpus)),
         val_split=val_split,
     )
 
@@ -167,6 +178,7 @@ def main(
         gpus=gpus,
         accelerator="ddp" if gpus > 1 else None,
         logger=logger,
+        gradient_clip_val=1e-2,
         **trainer_kwargs,
     )
 
