@@ -18,7 +18,7 @@ try:
 except ImportError:
     ImbalancedDatasetSampler = None
 
-from kaggle_plantpathology.augment import KORNIA_TRAIN_TRANSFORM, KORNIA_VALID_TRANSFORM
+from kaggle_imgclassif.plant_pathology.augment import KORNIA_TRAIN_TRANSFORM, KORNIA_VALID_TRANSFORM
 
 IMAGE_EXTENSIONS = (".png", ".jpg", ".jpeg")
 

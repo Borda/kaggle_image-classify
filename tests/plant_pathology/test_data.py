@@ -4,7 +4,7 @@ import numpy
 import pytest
 from torch import Tensor
 
-from kaggle_plantpathology.data import PlantPathologyDataset, PlantPathologyDM, PlantPathologySimpleDataset
+from kaggle_imgclassif.plant_pathology.data import PlantPathologyDataset, PlantPathologyDM, PlantPathologySimpleDataset
 
 from tests import _ROOT_TESTS
 

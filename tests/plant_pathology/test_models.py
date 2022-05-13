@@ -3,8 +3,8 @@ import os
 import pytest
 from pytorch_lightning import Trainer
 
-from kaggle_plantpathology.data import PlantPathologyDM
-from kaggle_plantpathology.models import LitPlantPathology, MultiPlantPathology
+from kaggle_imgclassif.plant_pathology.data import PlantPathologyDM
+from kaggle_imgclassif.plant_pathology.models import LitPlantPathology, MultiPlantPathology
 
 from tests import _ROOT_TESTS
 

@@ -1,7 +1,7 @@
 import pytest
 import torch
 
-from kaggle_plantpathology.augment import LitAugmenter
+from kaggle_imgclassif.plant_pathology.augment import LitAugmenter
 
 
 @pytest.mark.parametrize("img_shape", [(1, 3, 192, 192), (2, 3, 224, 224)])

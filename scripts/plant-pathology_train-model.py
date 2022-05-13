@@ -2,7 +2,7 @@
 #
 # # Kaggle: Plant Pathology 2021 - FGVC8
 #
-# > python cli_train.py \
+# > python plant-pathology_train-model.py \
 #       --model.model resnet34 \
 #       --data.base_path /mnt/69B27B700DDA7D73/Datasets/plant-pathology-2021-640px/
 #
@@ -10,8 +10,8 @@
 import torch
 from pytorch_lightning.utilities.cli import LightningCLI
 
-from kaggle_plantpathology.data import PlantPathologyDM
-from kaggle_plantpathology.models import MultiPlantPathology
+from kaggle_imgclassif.plant_pathology.data import PlantPathologyDM
+from kaggle_imgclassif.plant_pathology.models import MultiPlantPathology
 
 TRAINER_DEFAULTS = dict(
     gpus=1,
