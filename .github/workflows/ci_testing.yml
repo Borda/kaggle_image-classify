@@ -53,7 +53,7 @@ jobs:
       env:
         TEST_RESULTS: test-results-${{ runner.os }}-${{ matrix.python-version }}-${{ matrix.package }}.xml
       run: |
-        python -m pytest kaggle_${{ matrix.package }} tests/${{ matrix.package }} -v --cov=kaggle_${{ matrix.package }} --junitxml=junit/$TEST_RESULTS
+        python -m pytest kaggle_imgclassif tests/${{ matrix.package }} -v --cov=kaggle_imgclassif --junitxml=junit/$TEST_RESULTS
 
     - name: Upload pytest test results
       uses: actions/upload-artifact@v2
