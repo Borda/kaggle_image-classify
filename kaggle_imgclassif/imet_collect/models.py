@@ -1,29 +1,11 @@
-from typing import Optional
+from typing import Optional, Union
 
+import timm
 import torch
-import torchvision
 from pytorch_lightning import LightningModule
 from torch import nn, Tensor
 from torch.nn import functional as F
 from torchmetrics import Accuracy, F1Score, Precision
-
-
-class LitResnet(nn.Module):
-    """Simple TV model.
-
-    >>> net = LitResnet("resnet18")
-    """
-
-    def __init__(self, arch: str, pretrained: bool = True, num_classes: int = 6):
-        super().__init__()
-        self.arch = arch
-        self.num_classes = num_classes
-        self.model = torchvision.models.__dict__[arch](pretrained=pretrained)
-        num_features = self.model.fc.in_features
-        self.model.fc = nn.Linear(num_features, num_classes)
-
-    def forward(self, x):
-        return self.model(x)
 
 
 class LitMet(LightningModule):
@@ -31,15 +13,18 @@ class LitMet(LightningModule):
 
     def __init__(
         self,
-        model,
+        model: Union[str, nn.Module],
         num_classes: int,
-        name: str = "",
         lr: float = 1e-4,
         augmentations: Optional[nn.Module] = None,
     ):
         super().__init__()
-        self.model = model
-        self.name = name or model.__class__.__name__
+        if isinstance(model, str):
+            self.name = model
+            self.model = timm.create_model(model, pretrained=True, num_classes=num_classes)
+        else:
+            self.model = model
+            self.name = model.__class__.__name__
         self.num_classes = num_classes
         self.train_accuracy = Accuracy()
         _metrics_extra_args = dict(num_classes=self.num_classes, average="weighted")

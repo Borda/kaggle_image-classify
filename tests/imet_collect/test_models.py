@@ -4,15 +4,11 @@ import timm
 from pytorch_lightning import Trainer
 
 from kaggle_imgclassif.imet_collect.data import IMetDM
-from kaggle_imgclassif.imet_collect.models import LitMet, LitResnet
+from kaggle_imgclassif.imet_collect.models import LitMet
 
 from tests import _ROOT_DATA
 
 PATH_DATA = os.path.join(_ROOT_DATA, "imet-collect")
-
-
-def test_create_resnet():
-    LitResnet(arch="resnet18", pretrained=False)
 
 
 def test_create_model():
