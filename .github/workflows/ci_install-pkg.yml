@@ -58,7 +58,7 @@ jobs:
           ls
           pip install $(python -c "import glob ; print(' '.join(glob.glob('*.whl')))")
           pip show kaggle-image-classification
-          python -c "import kaggle_imgclassif ; print(kaggle_imgclassif.plant_pathology.__version__)"
-          python -c "import kaggle_imgclassif ; print(kaggle_imgclassif.imet_collect.__version__)"
-          python -c "import kaggle_imgclassif ; print(kaggle_imgclassif.cassava.__version__)"
-          python -c "import kaggle_imgclassif ; print(kaggle_imgclassif.birdclef.__version__)"
+          python -c "from kaggle_imgclassif import plant_pathology ; print(plant_pathology.__version__)"
+          python -c "from kaggle_imgclassif import imet_collect ; print(imet_collect.__version__)"
+          python -c "from kaggle_imgclassif import cassava ; print(cassava.__version__)"
+          python -c "from kaggle_imgclassif import birdclef ; print(birdclef.__version__)"
