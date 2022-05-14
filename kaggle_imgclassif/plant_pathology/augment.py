@@ -12,7 +12,7 @@ from torchvision import transforms as T
 try:
     from kornia import augmentation, geometry, image_to_tensor
 except ImportError:
-    augmentation, geometry, image_to_tensor = None, None, None
+    augmentation, geometry, image_to_tensor = object, None, None
 
 from kaggle_imgclassif.plant_pathology import DATASET_IMAGE_MEAN, DATASET_IMAGE_STD
 
