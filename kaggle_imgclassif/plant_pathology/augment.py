@@ -1,4 +1,5 @@
 """Module to perform efficient preprocess and data augmentation."""
+from typing import Tuple
 
 import numpy as np
 import torch
@@ -12,7 +13,7 @@ from torchvision import transforms as T
 try:
     from kornia import augmentation, geometry, image_to_tensor
 except ImportError:
-    augmentation, geometry, image_to_tensor = object, None, None
+    augmentation, geometry, image_to_tensor = None, None, None
 
 from kaggle_imgclassif.plant_pathology import DATASET_IMAGE_MEAN, DATASET_IMAGE_STD
 
@@ -55,11 +56,13 @@ class Resize(nn.Module):
 class LitPreprocess(nn.Module):
     """Applies the processing to the image in the worker before collate."""
 
-    def __init__(self, img_size: int):
+    def __init__(self, img_size: Tuple[int, int]):
         super().__init__()
+        if isinstance(img_size, int):
+            img_size = (img_size, img_size)
         self.preprocess = nn.Sequential(
             # K.augmentation.RandomResizedCrop((224, 224)),
-            Resize((img_size, img_size)),  # use this better to see whole image
+            Resize(img_size),  # use this better to see whole image
             augmentation.Normalize(Tensor(DATASET_IMAGE_MEAN), Tensor(DATASET_IMAGE_STD)),
         )
 
@@ -101,5 +104,6 @@ class LitAugmenter(nn.Module):
 
 
 #: Kornia default augmentations
-KORNIA_TRAIN_TRANSFORM = LitPreprocess(512)
-KORNIA_VALID_TRANSFORM = LitPreprocess(224)
+if augmentation:
+    KORNIA_TRAIN_TRANSFORM = LitPreprocess(512)
+    KORNIA_VALID_TRANSFORM = LitPreprocess(224)
