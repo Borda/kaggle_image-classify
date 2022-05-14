@@ -3,12 +3,16 @@
 import numpy as np
 import torch
 import torch.nn as nn
-from kornia import augmentation, geometry, image_to_tensor
 
 # Define the augmentations pipeline
 from PIL import Image
 from torch import Tensor
 from torchvision import transforms as T
+
+try:
+    from kornia import augmentation, geometry, image_to_tensor
+except ImportError:
+    augmentation, geometry, image_to_tensor = None, None, None
 
 from kaggle_imgclassif.plant_pathology import DATASET_IMAGE_MEAN, DATASET_IMAGE_STD
 
