@@ -9,6 +9,11 @@ from torchmetrics import Accuracy, F1Score
 
 
 class LitCassava(LightningModule):
+    """Basic Cassava model.
+
+    >>> model = LitCassava("resnet18")
+    """
+
     def __init__(self, model: Union[str, nn.Module], num_classes: int = 5, lr: float = 1e-4):
         super().__init__()
         if isinstance(model, str):

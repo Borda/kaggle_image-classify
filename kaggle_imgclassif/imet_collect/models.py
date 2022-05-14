@@ -9,7 +9,10 @@ from torchmetrics import Accuracy, F1Score, Precision
 
 
 class LitMet(LightningModule):
-    """This model is meant and tested to be used together with ..."""
+    """This model is meant and tested to be used together with ...
+
+    >>> model = LitMet("resnet18", num_classes=125)
+    """
 
     def __init__(
         self,
