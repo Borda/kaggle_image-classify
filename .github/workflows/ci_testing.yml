@@ -45,6 +45,7 @@ jobs:
 
     - name: Install dependencies
       run: |
+        sudo apt install -y libsndfile1
         pip install ".[test,${{ matrix.package }}]" --find-links https://download.pytorch.org/whl/cpu/torch_stable.html
         pip list
       shell: bash
