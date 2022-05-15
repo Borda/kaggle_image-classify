@@ -48,11 +48,11 @@ class ImageClassificationInputTransform(InputTransform):
         return T.Compose(
             [
                 T.TrivialAugmentWide(),
-                T.RandomPosterize(bits=2),
+                T.RandomPosterize(bits=6),
+                T.RandomEqualize(),
                 T.ToTensor(),
                 T.Resize(self.image_size),
                 T.RandomHorizontalFlip(),
-                # T.RandomEqualize(),
                 # T.ColorJitter(brightness=0.2, hue=0.1),
                 T.RandomAutocontrast(),
                 T.RandomAdjustSharpness(sharpness_factor=2),
@@ -77,10 +77,24 @@ def load_df_train(dataset_dir: str) -> pd.DataFrame:
     df_train = pd.merge(train_annotations, train_images, how="left", right_index=True, left_on="image_id")
     df_train = pd.merge(df_train, train_categories, how="left", right_index=True, left_on="category_id")
     df_train = pd.merge(df_train, train_institutions, how="left", right_index=True, left_on="institution_id")
+    df_train["file_name"] = df_train["file_name"].apply(lambda p: os.path.join("train_images", p))
     return df_train
 
 
-def inference(model, df_test: pd.DataFrame, dataset_dir: str, gpus: int = 0) -> pd.DataFrame:
+def append_predictions(df_train: pd.DataFrame, path_csv: str = None) -> pd.DataFrame:
+    if not path_csv:
+        return df_train
+    if os.path.isfile(path_csv):
+        raise FileNotFoundError(f"Missing predictions: {path_csv}")
+    df_preds = pd.read_csv(path_csv)
+    df_preds["file_name"] = df_preds["file_name"].apply(lambda p: os.path.join("test_images", p))
+    df_train.append(df_preds)
+    return df_train
+
+
+def inference(
+    model, df_test: pd.DataFrame, dataset_dir: str, image_size: int, batch_size: int, gpus: int = 0
+) -> pd.DataFrame:
     print(f"inference for {len(df_test)} images")
     print(df_test.head())
 
@@ -92,9 +106,9 @@ def inference(model, df_test: pd.DataFrame, dataset_dir: str, gpus: int = 0) -> 
         # predict_data_frame=test_images[:len(test_images) // 100],
         predict_images_root=os.path.join(dataset_dir, "test_images"),
         predict_transform=ImageClassificationInputTransform,
-        batch_size=16,
-        transform_kwargs={"image_size": (384, 384)},
-        num_workers=6,
+        batch_size=batch_size,
+        transform_kwargs={"image_size": (image_size, image_size)},
+        num_workers=batch_size,
     )
 
     trainer = flash.Trainer(gpus=min(gpus, 1))
@@ -105,21 +119,22 @@ def inference(model, df_test: pd.DataFrame, dataset_dir: str, gpus: int = 0) -> 
         predictions += lbs
 
     print(f"Predictions: {len(predictions)} & Test images: {len(df_test)}")
-    submission = pd.DataFrame({"Id": df_test.index, "Predicted": predictions}).set_index("Id")
-    return submission
+    df_test["category_id"] = predictions
+    return df_test
 
 
 def main(
     dataset_dir: str = "/home/jirka/Datasets/herbarium-2022-fgvc9",
     checkpoints_dir: str = "/home/jirka/Workspace/checkpoints_herbarium-flash",
-    batch_size: int = 24,
+    predict_csv: str = None,
     model_backbone: str = "efficientnet_b3",
     model_pretrained: bool = False,
-    optimizer: str = "AdamW",
     image_size: int = 320,
+    optimizer: str = "AdamW",
     lr_scheduler: Optional[str] = None,
     learning_rate: float = 5e-3,
     label_smoothing: float = 0.01,
+    batch_size: int = 24,
     max_epochs: int = 20,
     gpus: int = 1,
     val_split: float = 0.1,
@@ -136,7 +151,14 @@ def main(
         test_data = json.load(fp)
     df_test = pd.DataFrame(test_data).set_index("image_id")
 
+    # ToDo
+    # df_counts = df_train.groupby("category_id").size()
+    # labels = list(df_counts.index)
+    # sampler = WeightedRandomSampler(torch.from_numpy(1. / df_counts.values), len(df_counts))
+
     df_train, df_val = train_test_split(df_train, test_size=val_split, stratify=df_train["category_id"].tolist())
+    # noisy predictions shall not be in validation
+    df_train = append_predictions(df_train, path_csv=predict_csv)
 
     datamodule = ImageClassificationData.from_data_frame(
         input_field="file_name",
@@ -144,14 +166,15 @@ def main(
         # for simplicity take just half of the data
         # train_data_frame=df_train[:len(df_train) // 2],
         train_data_frame=df_train,
-        train_images_root=os.path.join(dataset_dir, "train_images"),
+        train_images_root=dataset_dir,
         val_data_frame=df_val,
-        val_images_root=os.path.join(dataset_dir, "train_images"),
+        val_images_root=dataset_dir,
         train_transform=ImageClassificationInputTransform,
         val_transform=ImageClassificationInputTransform,
         transform_kwargs={"image_size": (image_size, image_size)},
         batch_size=batch_size,
         num_workers=num_workers if num_workers else min(batch_size, int(os.cpu_count() / gpus)),
+        # sampler=sampler,
     )
 
     loss = LabelSmoothingCrossEntropy(label_smoothing) if label_smoothing else AsymmetricLossSingleLabel()
@@ -197,7 +220,12 @@ def main(
     trainer.save_checkpoint(os.path.join(checkpoints_dir, checkpoint_name))
 
     if run_inference and trainer.is_global_zero:
-        submission = inference(model, df_test, dataset_dir, gpus)
+        df_preds = inference(
+            model, df_test, dataset_dir=dataset_dir, image_size=image_size, batch_size=batch_size, gpus=gpus
+        )
+        preds_name = f"predictions_herbarium-{log_id}_{model_backbone}-{image_size}.csv"
+        df_preds.to_csv(os.path.join(checkpoints_dir, preds_name))
+        submission = pd.DataFrame({"Id": df_preds.index, "Predicted": df_preds["category_id"]}).set_index("Id")
         submission_name = f"submission_herbarium-{log_id}_{model_backbone}-{image_size}.csv"
         submission.to_csv(os.path.join(checkpoints_dir, submission_name))
 
