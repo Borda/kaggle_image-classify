@@ -5,7 +5,7 @@
     --batch_size 72 --accumulate_grad_batches=12
 
 >> python3 scripts/herbarium_train-model.py --gpus 6 --max_epochs 30 --val_split 0.05 \
-    --learning_rate 0.01 --model_backbone dm_nfnet_f3 --image_size 416 --model_pretrained True \
+    --learning_rate 0.001 --model_backbone dm_nfnet_f3 --image_size 416 --model_pretrained True \
     --batch_size 18 --accumulate_grad_batches=48
 """
 
@@ -22,7 +22,8 @@ from flash.core.data.io.input_transform import InputTransform
 from flash.image import ImageClassificationData, ImageClassifier
 from pytorch_lightning.callbacks import EarlyStopping, ModelCheckpoint, StochasticWeightAveraging
 from pytorch_lightning.loggers import WandbLogger
-from timm.loss import LabelSmoothingCrossEntropy
+from sklearn.model_selection import train_test_split
+from timm.loss import AsymmetricLossSingleLabel, LabelSmoothingCrossEntropy
 from torchmetrics import F1Score
 from torchvision import transforms as T
 
@@ -135,26 +136,31 @@ def main(
         test_data = json.load(fp)
     df_test = pd.DataFrame(test_data).set_index("image_id")
 
+    df_train, df_val = train_test_split(df_train, test_size=val_split, stratify=df_train["category_id"].tolist())
+
     datamodule = ImageClassificationData.from_data_frame(
         input_field="file_name",
         target_fields="category_id",
         # for simplicity take just half of the data
-        train_data_frame=df_train,
         # train_data_frame=df_train[:len(df_train) // 2],
+        train_data_frame=df_train,
         train_images_root=os.path.join(dataset_dir, "train_images"),
+        val_data_frame=df_val,
+        val_images_root=os.path.join(dataset_dir, "train_images"),
         train_transform=ImageClassificationInputTransform,
         val_transform=ImageClassificationInputTransform,
         transform_kwargs={"image_size": (image_size, image_size)},
         batch_size=batch_size,
         num_workers=num_workers if num_workers else min(batch_size, int(os.cpu_count() / gpus)),
-        val_split=val_split,
     )
+
+    loss = LabelSmoothingCrossEntropy(label_smoothing) if label_smoothing else AsymmetricLossSingleLabel()
 
     model = ImageClassifier(
         backbone=model_backbone,
         metrics=F1Score(num_classes=datamodule.num_classes, average="macro"),
         pretrained=model_pretrained,
-        loss_fn=LabelSmoothingCrossEntropy(label_smoothing),
+        loss_fn=loss,
         optimizer=optimizer,
         learning_rate=learning_rate,
         lr_scheduler=lr_scheduler,
