@@ -13,9 +13,9 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-20.04, macOS-10.15, windows-2019]
+        os: [ubuntu-20.04]  # macOS-10.15, windows-2019
         python-version: [3.7]
-        package: ["plantpathology", "imetcollect", "cassava", "birdclef"]
+        package: ["plant_pathology", "imet_collect", "cassava", "birdclef"]
 
     # Timeout: https://stackoverflow.com/a/59076067/4521646
     timeout-minutes: 25
@@ -45,6 +45,7 @@ jobs:
 
     - name: Install dependencies
       run: |
+        sudo apt install -y libsndfile1
         pip install ".[test,${{ matrix.package }}]" --find-links https://download.pytorch.org/whl/cpu/torch_stable.html
         pip list
       shell: bash
@@ -53,7 +54,7 @@ jobs:
       env:
         TEST_RESULTS: test-results-${{ runner.os }}-${{ matrix.python-version }}-${{ matrix.package }}.xml
       run: |
-        python -m pytest kaggle_${{ matrix.package }} tests/${{ matrix.package }} -v --cov=kaggle_${{ matrix.package }} --junitxml=junit/$TEST_RESULTS
+        python -m pytest kaggle_imgclassif tests/${{ matrix.package }} -v --cov=kaggle_imgclassif --junitxml=junit/$TEST_RESULTS
 
     - name: Upload pytest test results
       uses: actions/upload-artifact@v2

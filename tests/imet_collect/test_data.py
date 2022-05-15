@@ -5,11 +5,11 @@ import torch
 from PIL import Image
 from torch import tensor
 
-from kaggle_imetcollect.data import IMetDataset, IMetDM
+from kaggle_imgclassif.imet_collect.data import IMetDataset, IMetDM
 
-from tests import _ROOT_TESTS
+from tests import _ROOT_DATA
 
-_PATH_HERE = os.path.dirname(__file__)
+PATH_DATA = os.path.join(_ROOT_DATA, "imet-collect")
 _TEST_IMAGE_NAMES = (
     "1cc66a822733a3c3a1ce66fe4be60a6f",
     "09fe6ff247881b37779bcb386c26d7bb",
@@ -54,10 +54,10 @@ _TEST_LABELS_BINARY = [
 
 
 @pytest.mark.parametrize("phase", ["train", "valid"])
-def test_dataset(phase, root_path=_ROOT_TESTS):
+def test_dataset(phase, path_data=PATH_DATA):
     dataset = IMetDataset(
-        df_data=os.path.join(root_path, "data_imet-collect", "train-from-kaggle.csv"),
-        path_img_dir=os.path.join(root_path, "data_imet-collect", "train-1", "train-1"),
+        df_data=os.path.join(path_data, "train-from-kaggle.csv"),
+        path_img_dir=os.path.join(path_data, "train-1", "train-1"),
         split=1.0 if phase == "train" else 0.0,
         mode=phase,
         random_state=42,
@@ -74,10 +74,10 @@ def test_dataset(phase, root_path=_ROOT_TESTS):
     assert all(torch.equal(a, b) for a, b in zip(_TEST_LABELS_BINARY, lbs))
 
 
-def test_datamodule(root_path=_ROOT_TESTS):
+def test_datamodule(path_data=PATH_DATA):
     dm = IMetDM(
         path_csv="train-from-kaggle.csv",
-        base_path=os.path.join(root_path, "data_imet-collect"),
+        base_path=path_data,
         batch_size=2,
         split=0.6,
     )

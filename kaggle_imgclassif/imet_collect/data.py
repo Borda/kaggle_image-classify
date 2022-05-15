@@ -5,7 +5,6 @@ import multiprocessing as mproc
 import os
 from typing import Dict, List, Optional, Sequence, Tuple, Union
 
-import cv2
 import numpy as np
 import pandas as pd
 import torch
@@ -16,6 +15,11 @@ from pytorch_lightning import LightningDataModule
 from torch import Tensor
 from torch.utils.data import DataLoader, Dataset
 from torchvision import transforms as T
+
+try:
+    import cv2
+except ImportError:
+    cv2 = None
 
 # ImageFile.LOAD_TRUNCATED_IMAGES = True
 

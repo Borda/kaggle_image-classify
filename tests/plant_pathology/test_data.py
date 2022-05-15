@@ -4,9 +4,11 @@ import numpy
 import pytest
 from torch import Tensor
 
-from kaggle_plantpathology.data import PlantPathologyDataset, PlantPathologyDM, PlantPathologySimpleDataset
+from kaggle_imgclassif.plant_pathology.data import PlantPathologyDataset, PlantPathologyDM, PlantPathologySimpleDataset
 
-from tests import _ROOT_TESTS
+from tests import _ROOT_DATA
+
+PATH_DATA = os.path.join(_ROOT_DATA, "plant-pathology")
 
 _TEST_IMAGE_NAMES = (
     "800113bb65efe69e.jpg",
@@ -45,10 +47,10 @@ _TEST_LABELS_BINARY = [
     ],
 )
 @pytest.mark.parametrize("phase", ["train", "valid"])
-def test_dataset(data_cls, labels, phase, root_path=_ROOT_TESTS):
+def test_dataset(data_cls, labels, phase, path_data=PATH_DATA):
     dataset = data_cls(
-        df_data=os.path.join(root_path, "data_plant-pathology", "train.csv"),
-        path_img_dir=os.path.join(root_path, "data_plant-pathology", "train_images"),
+        df_data=os.path.join(path_data, "train.csv"),
+        path_img_dir=os.path.join(path_data, "train_images"),
         split=1.0 if phase == "train" else 0.0,
         mode=phase,
     )
@@ -67,10 +69,10 @@ def test_dataset(data_cls, labels, phase, root_path=_ROOT_TESTS):
 
 @pytest.mark.parametrize("simple", [True, False])
 @pytest.mark.parametrize("balance", [True, False])
-def test_datamodule(simple, balance, root_path=_ROOT_TESTS):
+def test_datamodule(simple, balance, path_data=PATH_DATA):
     dm = PlantPathologyDM(
         path_csv="train.csv",
-        base_path=os.path.join(root_path, "data_plant-pathology"),
+        base_path=path_data,
         simple=simple,
         split=0.6,
         balancing=balance,

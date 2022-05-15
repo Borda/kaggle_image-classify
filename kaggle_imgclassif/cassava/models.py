@@ -1,37 +1,25 @@
+from typing import Union
+
+import timm
 import torch
-import torchvision
 from pytorch_lightning import LightningModule
 from torch import nn
 from torch.nn import functional as F
 from torchmetrics import Accuracy, F1Score
 
 
-class LitResnet(nn.Module):
-    def __init__(self, arch: str, pretrained: bool = True, num_classes: int = 5):
-        super().__init__()
-        self.model = torchvision.models.__dict__[arch](pretrained=pretrained)
-        num_features = self.model.fc.in_features
-        self.model.fc = nn.Linear(num_features, num_classes)
-
-    def forward(self, x):
-        return self.model(x)
-
-
-class LitMobileNet(nn.Module):
-    def __init__(self, arch: str, pretrained: bool = True, num_classes: int = 5):
-        super().__init__()
-        self.model = torchvision.models.__dict__[arch](pretrained=pretrained)
-        num_features = self.model.classifier[-1].in_features
-        self.model.classifier[-1] = nn.Linear(num_features, num_classes)
-
-    def forward(self, x):
-        return self.model(x)
-
-
 class LitCassava(LightningModule):
-    def __init__(self, model, num_classes: int = 5, lr: float = 1e-4):
+    """Basic Cassava model.
+
+    >>> model = LitCassava("resnet18")
+    """
+
+    def __init__(self, model: Union[str, nn.Module], num_classes: int = 5, lr: float = 1e-4):
         super().__init__()
-        self.model = model
+        if isinstance(model, str):
+            self.model = timm.create_model(model, pretrained=True, num_classes=num_classes)
+        else:
+            self.model = model
         self.accuracy = Accuracy()
         self.f1_score = F1Score(num_classes)
         self.learn_rate = lr

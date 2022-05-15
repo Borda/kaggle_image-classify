@@ -10,9 +10,9 @@ import streamlit as st
 import torch
 from PIL import Image
 
-from kaggle_plantpathology.augment import TORCHVISION_VALID_TRANSFORM
-from kaggle_plantpathology.data import PlantPathologyDM
-from kaggle_plantpathology.models import LitPlantPathology, MultiPlantPathology
+from kaggle_imgclassif.plant_pathology.augment import TORCHVISION_VALID_TRANSFORM
+from kaggle_imgclassif.plant_pathology.data import PlantPathologyDM
+from kaggle_imgclassif.plant_pathology.models import LitPlantPathology, MultiPlantPathology
 
 MODEL_PATH_GDRIVE = "https://drive.google.com/uc?id=1bynbFW0FpIt7fnqzImu2UIM1PHb9-yjw"
 MODEL_PATH_LOCAL = "fgvc8_resnet50.pt"
@@ -34,7 +34,7 @@ def get_model(model_path: str = MODEL_PATH_LOCAL) -> LitPlantPathology:
 
 def process_image(
     model: LitPlantPathology,
-    img_path: str = "tests/data_plant-pathology/test_images/8a0d7cad7053f18d.jpg",
+    img_path: str = "tests/_data/plant-pathology/test_images/8a0d7cad7053f18d.jpg",
     streamlit_app: bool = False,
 ):
     if not img_path:

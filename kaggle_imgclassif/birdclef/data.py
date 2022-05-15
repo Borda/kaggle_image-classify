@@ -1,15 +1,15 @@
 import os
 from math import ceil
 
-import librosa
 import matplotlib.pyplot as plt
 import numpy as np
 from PIL import Image
 
 try:
+    import librosa
     import noisereduce
 except ImportError:
-    noisereduce = object
+    noisereduce, librosa = None, None
 
 SPECTROGRAM_PARAMS = dict(
     sample_rate=32_000, hop_length=640, n_fft=800, n_mels=128, fmin=20, fmax=16_000, win_length=512

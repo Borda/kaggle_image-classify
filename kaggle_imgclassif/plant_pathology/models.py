@@ -9,7 +9,10 @@ from torchmetrics import Accuracy, F1Score, Precision
 
 
 class LitPlantPathology(LightningModule):
-    """This model is meant and tested to be used together with `PlantPathologySimpleDataset`"""
+    """This model is meant and tested to be used together with `PlantPathologySimpleDataset`
+
+    >>> model = LitPlantPathology()
+    """
 
     def __init__(
         self,
@@ -73,7 +76,10 @@ class LitPlantPathology(LightningModule):
 
 
 class MultiPlantPathology(LitPlantPathology):
-    """This model is meant and tested to be used together with `PlantPathologyDataset`"""
+    """This model is meant and tested to be used together with `PlantPathologyDataset`
+
+    >>> model = MultiPlantPathology()
+    """
 
     @property
     def _metrics_extra_args(self):
