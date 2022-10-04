@@ -22,7 +22,6 @@ LUT_LABELS = dict(enumerate(sorted(UNIQUE_LABELS)))
 
 @st.cache(allow_output_mutation=True)
 def get_model(model_path: str = MODEL_PATH_LOCAL) -> LitPlantPathology:
-
     if not os.path.isfile(model_path):
         # download models if it missing locally
         gdown.download(MODEL_PATH_GDRIVE, model_path, quiet=False)

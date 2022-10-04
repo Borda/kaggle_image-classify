@@ -24,20 +24,20 @@ repos:
       - id: detect-private-key
 
   - repo: https://github.com/asottile/pyupgrade
-    rev: v2.34.0
+    rev: v2.38.2
     hooks:
       - id: pyupgrade
         args: [--py37-plus]
         name: Upgrade code
 
-  - repo: https://github.com/myint/docformatter
-    rev: v1.4
+  - repo: https://github.com/PyCQA/docformatter
+    rev: v1.5.0
     hooks:
       - id: docformatter
         args: [--in-place, --wrap-summaries=115, --wrap-descriptions=120]
 
   - repo: https://github.com/omnilib/ufmt
-    rev: v2.0.0b2
+    rev: v2.0.1
     hooks:
       - id: ufmt
         additional_dependencies:
@@ -45,7 +45,7 @@ repos:
           - usort == 1.0.2
 
   - repo: https://github.com/executablebooks/mdformat
-    rev: 0.7.14
+    rev: 0.7.16
     hooks:
       - id: mdformat
         additional_dependencies:
@@ -54,12 +54,12 @@ repos:
           - mdformat_frontmatter
 
   - repo: https://github.com/asottile/yesqa
-    rev: v1.3.0
+    rev: v1.4.0
     hooks:
       - id: yesqa
 
   - repo: https://github.com/PyCQA/flake8
-    rev: 4.0.1
+    rev: 5.0.4
     hooks:
       - id: flake8
         name: PEP8
