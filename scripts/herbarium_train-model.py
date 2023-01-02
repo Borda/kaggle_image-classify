@@ -30,7 +30,6 @@ from torchvision import transforms as T
 
 @dataclass
 class ImageClassificationInputTransform(InputTransform):
-
     image_size: Tuple[int, int] = (224, 224)
     color_mean: Tuple[float, float, float] = (0.781, 0.759, 0.710)
     color_std: Tuple[float, float, float] = (0.241, 0.245, 0.249)
