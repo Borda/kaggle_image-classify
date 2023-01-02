@@ -150,7 +150,6 @@ class PlantPathologySimpleDataset(PlantPathologyDataset):
 
 
 class PlantPathologyDM(LightningDataModule):
-
     labels_unique: Sequence
     lut_label: Dict
     label_histogram: Tensor
