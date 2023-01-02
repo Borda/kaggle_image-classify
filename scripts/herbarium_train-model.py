@@ -2,7 +2,7 @@
 
 >> python3 scripts/herbarium_train-model.py --gpus 6 --max_epochs 30 --val_split 0.05 \
     --learning_rate 0.01 --model_backbone convnext_base_384_in22ft1k --image_size 384 --model_pretrained True \
-    --batch_size 72 --accumulate_grad_batches=12
+    --batch_size 72 --label_smoothing None --accumulate_grad_batches=12
 
 >> python3 scripts/herbarium_train-model.py --gpus 6 --max_epochs 30 --val_split 0.05 \
     --learning_rate 0.001 --model_backbone dm_nfnet_f3 --image_size 416 --model_pretrained True \
@@ -169,8 +169,7 @@ def main(
         train_images_root=dataset_dir,
         val_data_frame=df_val,
         val_images_root=dataset_dir,
-        train_transform=ImageClassificationInputTransform,
-        val_transform=ImageClassificationInputTransform,
+        transform=ImageClassificationInputTransform,
         transform_kwargs={"image_size": (image_size, image_size)},
         batch_size=batch_size,
         num_workers=num_workers if num_workers else min(batch_size, int(os.cpu_count() / gpus)),
@@ -200,7 +199,7 @@ def main(
     if isinstance(swa, float):
         cbs.append(StochasticWeightAveraging(swa_epoch_start=swa))
 
-    trainer = flash.Trainer(
+    trainer_flags = dict(
         callbacks=cbs,
         max_epochs=max_epochs,
         precision="bf16" if gpus else 32,
@@ -208,8 +207,9 @@ def main(
         accelerator="ddp" if gpus > 1 else None,
         logger=logger,
         gradient_clip_val=1e-2,
-        **trainer_kwargs,
     )
+    trainer_flags.update(trainer_kwargs)
+    trainer = flash.Trainer(**trainer_flags)
 
     # Train the model
     # trainer.finetune(model, datamodule=datamodule, strategy="no_freeze")
