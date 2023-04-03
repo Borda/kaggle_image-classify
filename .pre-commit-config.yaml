@@ -37,7 +37,7 @@ repos:
         args: [--in-place, --wrap-summaries=115, --wrap-descriptions=120]
 
   - repo: https://github.com/omnilib/ufmt
-    rev: v2.0.1
+    rev: v2.1.0
     hooks:
       - id: ufmt
         additional_dependencies:
