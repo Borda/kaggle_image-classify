@@ -16,7 +16,7 @@ repos:
       - id: check-case-conflict
       - id: check-yaml
       - id: check-toml
-      - id: pretty-format-json
+      #- id: pretty-format-json
       - id: check-added-large-files
         exclude: .*\.ipynb
         args: ['--maxkb=250', '--enforce-all']
@@ -24,20 +24,20 @@ repos:
       - id: detect-private-key
 
   - repo: https://github.com/asottile/pyupgrade
-    rev: v3.8.0
+    rev: v3.13.0
     hooks:
       - id: pyupgrade
         args: [--py37-plus]
         name: Upgrade code
 
   - repo: https://github.com/PyCQA/docformatter
-    rev: v1.7.3
+    rev: v1.7.5
     hooks:
       - id: docformatter
         args: [--in-place, --wrap-summaries=115, --wrap-descriptions=120]
 
   - repo: https://github.com/omnilib/ufmt
-    rev: v2.1.0
+    rev: v2.2.0
     hooks:
       - id: ufmt
         additional_dependencies:
@@ -45,7 +45,7 @@ repos:
           - usort == 1.0.2
 
   - repo: https://github.com/executablebooks/mdformat
-    rev: 0.7.16
+    rev: 0.7.17
     hooks:
       - id: mdformat
         additional_dependencies:
@@ -58,8 +58,8 @@ repos:
     hooks:
       - id: yesqa
 
-  - repo: https://github.com/charliermarsh/ruff-pre-commit
-    rev: v0.0.275
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.0.292
     hooks:
       - id: ruff
         args: ["--fix"]
