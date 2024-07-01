@@ -9,7 +9,7 @@ ci:
 
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v4.5.0
+    rev: v4.6.0
     hooks:
       - id: end-of-file-fixer
       - id: trailing-whitespace
@@ -24,7 +24,7 @@ repos:
       - id: detect-private-key
 
   - repo: https://github.com/asottile/pyupgrade
-    rev: v3.15.2
+    rev: v3.16.0
     hooks:
       - id: pyupgrade
         args: [--py37-plus]
@@ -37,7 +37,7 @@ repos:
         args: [--in-place, --wrap-summaries=115, --wrap-descriptions=120]
 
   - repo: https://github.com/omnilib/ufmt
-    rev: v2.5.1
+    rev: v2.7.0
     hooks:
       - id: ufmt
         additional_dependencies:
@@ -59,7 +59,7 @@ repos:
       - id: yesqa
 
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.3.4
+    rev: v0.5.0
     hooks:
       - id: ruff
         args: ["--fix"]
