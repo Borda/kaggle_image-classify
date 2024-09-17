@@ -197,7 +197,8 @@ class PlantPathologyDM(LightningDataModule):
 
     @property
     def num_classes(self) -> int:
-        assert self.train_dataset and self.valid_dataset
+        assert self.train_dataset
+        assert self.valid_dataset
         return max(self.train_dataset.num_classes, self.valid_dataset.num_classes)
 
     @staticmethod
@@ -316,3 +317,4 @@ class PlantPathologyDM(LightningDataModule):
                 shuffle=False,
             )
         logging.warning("no testing images found")
+        return None

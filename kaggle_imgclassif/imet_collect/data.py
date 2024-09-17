@@ -330,3 +330,4 @@ class IMetDM(LightningDataModule):
                 shuffle=False,
             )
         logging.warning("no testing images found")
+        return None

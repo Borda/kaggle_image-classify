@@ -39,7 +39,7 @@ _TEST_LABELS_BINARY = [
 
 
 @pytest.mark.parametrize(
-    "data_cls,labels",
+    ("data_cls", "labels"),
     [
         (PlantPathologyDataset, _TEST_LABELS_BINARY),
         (PlantPathologySimpleDataset, [3, 1, 4, 0, 2, 3, 1]),

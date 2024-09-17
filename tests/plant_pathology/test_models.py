@@ -16,7 +16,7 @@ def test_create_model(model_cls, net: str = "resnet18"):
 
 
 @pytest.mark.parametrize(
-    "ds_simple,model_cls",
+    ("ds_simple", "model_cls"),
     [
         (True, LitPlantPathology),
         (False, MultiPlantPathology),
