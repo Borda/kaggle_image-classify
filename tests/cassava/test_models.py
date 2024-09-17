@@ -4,9 +4,7 @@ from pytorch_lightning import Trainer
 
 from kaggle_imgclassif.cassava.data import CassavaDataModule
 from kaggle_imgclassif.cassava.models import LitCassava
-
 from tests import _ROOT_DATA
-
 
 PATH_DATA = os.path.join(_ROOT_DATA, "cassava")
 

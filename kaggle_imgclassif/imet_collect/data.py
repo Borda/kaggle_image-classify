@@ -9,7 +9,7 @@ import numpy as np
 import pandas as pd
 import torch
 import tqdm
-from joblib import delayed, Parallel
+from joblib import Parallel, delayed
 from PIL import Image
 from pytorch_lightning import LightningDataModule
 from torch import Tensor
@@ -24,28 +24,24 @@ except ImportError:
 # ImageFile.LOAD_TRUNCATED_IMAGES = True
 
 #: default training augmentation
-TORCHVISION_TRAIN_TRANSFORM = T.Compose(
-    [
-        T.Resize(size=256, interpolation=Image.BILINEAR),
-        T.RandomRotation(degrees=25),
-        T.RandomPerspective(distortion_scale=0.2),
-        T.RandomResizedCrop(size=224),
-        # T.RandomHorizontalFlip(p=0.5),
-        T.RandomVerticalFlip(p=0.5),
-        # T.ColorJitter(brightness=0.05, contrast=0.05, saturation=0.05, hue=0.05),
-        T.ToTensor(),
-        T.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225]),
-    ]
-)
+TORCHVISION_TRAIN_TRANSFORM = T.Compose([
+    T.Resize(size=256, interpolation=Image.BILINEAR),
+    T.RandomRotation(degrees=25),
+    T.RandomPerspective(distortion_scale=0.2),
+    T.RandomResizedCrop(size=224),
+    # T.RandomHorizontalFlip(p=0.5),
+    T.RandomVerticalFlip(p=0.5),
+    # T.ColorJitter(brightness=0.05, contrast=0.05, saturation=0.05, hue=0.05),
+    T.ToTensor(),
+    T.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225]),
+])
 #: default validation augmentation
-TORCHVISION_VALID_TRANSFORM = T.Compose(
-    [
-        T.Resize(size=256, interpolation=Image.BILINEAR),
-        T.CenterCrop(size=224),
-        T.ToTensor(),
-        T.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225]),
-    ]
-)
+TORCHVISION_VALID_TRANSFORM = T.Compose([
+    T.Resize(size=256, interpolation=Image.BILINEAR),
+    T.CenterCrop(size=224),
+    T.ToTensor(),
+    T.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225]),
+])
 
 
 def load_image(path_img: str) -> Image.Image:

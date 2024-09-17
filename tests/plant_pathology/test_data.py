@@ -5,7 +5,6 @@ import pytest
 from torch import Tensor
 
 from kaggle_imgclassif.plant_pathology.data import PlantPathologyDataset, PlantPathologyDM, PlantPathologySimpleDataset
-
 from tests import _ROOT_DATA
 
 PATH_DATA = os.path.join(_ROOT_DATA, "plant-pathology")
@@ -58,7 +57,7 @@ def test_dataset(data_cls, labels, phase, path_data=PATH_DATA):
     img, _ = dataset[0]
     assert isinstance(img, numpy.ndarray)
     assert _TEST_IMAGE_NAMES == tuple(dataset.img_names) == tuple(dataset.data["image"])
-    assert _TEST_UNIQUE_LABELS == dataset.labels_unique
+    assert dataset.labels_unique == _TEST_UNIQUE_LABELS
     lbs = [dataset[i][1] for i in range(len(dataset))]
     if isinstance(lbs[0], Tensor):
         lbs = [list(lb.numpy()) for lb in lbs]

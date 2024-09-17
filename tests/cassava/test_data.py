@@ -3,7 +3,6 @@ import os
 import numpy
 
 from kaggle_imgclassif.cassava.data import CassavaDataModule, CassavaDataset
-
 from tests import _ROOT_DATA
 
 PATH_DATA = os.path.join(_ROOT_DATA, "cassava")

@@ -5,7 +5,6 @@ from pytorch_lightning import Trainer
 
 from kaggle_imgclassif.plant_pathology.data import PlantPathologyDM
 from kaggle_imgclassif.plant_pathology.models import LitPlantPathology, MultiPlantPathology
-
 from tests import _ROOT_DATA
 
 PATH_DATA = os.path.join(_ROOT_DATA, "plant-pathology")

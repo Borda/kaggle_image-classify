@@ -10,28 +10,24 @@ from pytorch_lightning import LightningDataModule
 from torch.utils.data import DataLoader, Dataset
 from torchvision import transforms as T
 
-TRAIN_TRANSFORM = T.Compose(
-    [
-        T.Resize(512),
-        T.RandomPerspective(),
-        T.RandomResizedCrop(224),
-        T.RandomHorizontalFlip(),
-        T.RandomVerticalFlip(),
-        T.ToTensor(),
-        # T.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225]),
-        T.Normalize([0.431, 0.498, 0.313], [0.237, 0.239, 0.227]),
-    ]
-)
+TRAIN_TRANSFORM = T.Compose([
+    T.Resize(512),
+    T.RandomPerspective(),
+    T.RandomResizedCrop(224),
+    T.RandomHorizontalFlip(),
+    T.RandomVerticalFlip(),
+    T.ToTensor(),
+    # T.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225]),
+    T.Normalize([0.431, 0.498, 0.313], [0.237, 0.239, 0.227]),
+])
 
-VALID_TRANSFORM = T.Compose(
-    [
-        T.Resize(256),
-        T.CenterCrop(224),
-        T.ToTensor(),
-        # T.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225]),
-        T.Normalize([0.431, 0.498, 0.313], [0.237, 0.239, 0.227]),
-    ]
-)
+VALID_TRANSFORM = T.Compose([
+    T.Resize(256),
+    T.CenterCrop(224),
+    T.ToTensor(),
+    # T.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225]),
+    T.Normalize([0.431, 0.498, 0.313], [0.237, 0.239, 0.227]),
+])
 
 
 class CassavaDataset(Dataset):
