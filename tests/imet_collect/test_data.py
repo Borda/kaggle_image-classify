@@ -6,7 +6,6 @@ from PIL import Image
 from torch import tensor
 
 from kaggle_imgclassif.imet_collect.data import IMetDataset, IMetDM
-
 from tests import _ROOT_DATA
 
 PATH_DATA = os.path.join(_ROOT_DATA, "imet-collect")

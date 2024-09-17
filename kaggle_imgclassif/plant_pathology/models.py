@@ -3,7 +3,7 @@ from typing import Optional, Union
 import timm
 import torch
 from pytorch_lightning import LightningModule
-from torch import nn, Tensor
+from torch import Tensor, nn
 from torch.nn import functional as F
 from torchmetrics import Accuracy, F1Score, Precision
 

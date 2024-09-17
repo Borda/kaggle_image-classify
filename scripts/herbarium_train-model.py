@@ -35,32 +35,28 @@ class ImageClassificationInputTransform(InputTransform):
     color_std: Tuple[float, float, float] = (0.241, 0.245, 0.249)
 
     def input_per_sample_transform(self):
-        return T.Compose(
-            [
-                T.ToTensor(),
-                T.Resize(self.image_size),
-                T.Normalize(self.color_mean, self.color_std),
-            ]
-        )
+        return T.Compose([
+            T.ToTensor(),
+            T.Resize(self.image_size),
+            T.Normalize(self.color_mean, self.color_std),
+        ])
 
     def train_input_per_sample_transform(self):
-        return T.Compose(
-            [
-                T.TrivialAugmentWide(),
-                T.RandomPosterize(bits=6),
-                T.RandomEqualize(),
-                T.ToTensor(),
-                T.Resize(self.image_size),
-                T.RandomHorizontalFlip(),
-                # T.ColorJitter(brightness=0.2, hue=0.1),
-                T.RandomAutocontrast(),
-                T.RandomAdjustSharpness(sharpness_factor=2),
-                T.GaussianBlur(kernel_size=(5, 9), sigma=(0.1, 5)),
-                T.RandomAffine(degrees=10, scale=(0.9, 1.1), translate=(0.1, 0.1)),
-                # T.RandomPerspective(distortion_scale=0.1),
-                T.Normalize(self.color_mean, self.color_std),
-            ]
-        )
+        return T.Compose([
+            T.TrivialAugmentWide(),
+            T.RandomPosterize(bits=6),
+            T.RandomEqualize(),
+            T.ToTensor(),
+            T.Resize(self.image_size),
+            T.RandomHorizontalFlip(),
+            # T.ColorJitter(brightness=0.2, hue=0.1),
+            T.RandomAutocontrast(),
+            T.RandomAdjustSharpness(sharpness_factor=2),
+            T.GaussianBlur(kernel_size=(5, 9), sigma=(0.1, 5)),
+            T.RandomAffine(degrees=10, scale=(0.9, 1.1), translate=(0.1, 0.1)),
+            # T.RandomPerspective(distortion_scale=0.1),
+            T.Normalize(self.color_mean, self.color_std),
+        ])
 
     def target_per_sample_transform(self) -> Callable:
         return torch.as_tensor

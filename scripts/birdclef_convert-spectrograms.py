@@ -6,7 +6,7 @@ import fire
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-from joblib import delayed, Parallel
+from joblib import Parallel, delayed
 from tqdm.auto import tqdm
 
 from kaggle_imgclassif.birdclef.data import convert_and_export
