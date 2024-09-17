@@ -7,41 +7,23 @@ on:  # Trigger the workflow on push or pull request, but only for the main branc
     branches: [main]
 
 jobs:
-  pytest:
-
+  pytester:
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-20.04]  # macOS-11, windows-2019
-        python-version: [3.7]
+        os: ["ubuntu-22.04"]  # macOS-11, windows-2019
+        python-version: ["3.8"]
         package: ["plant_pathology", "imet_collect", "cassava", "birdclef"]
-
     # Timeout: https://stackoverflow.com/a/59076067/4521646
     timeout-minutes: 25
-
     steps:
     - uses: actions/checkout@v2
     - name: Set up Python ${{ matrix.python-version }}
       uses: actions/setup-python@v2
       with:
         python-version: ${{ matrix.python-version }}
-
-    # Note: This uses an internal pip API and may not always work
-    # https://github.com/actions/cache/blob/master/examples.md#multiple-oss-in-a-workflow
-    - name: Get pip cache
-      id: pip-cache
-      run: |
-        pip --version
-        python -c "from pip._internal.locations import USER_CACHE_DIR; print('::set-output name=dir::' + USER_CACHE_DIR)"
-
-    - name: Cache pip
-      uses: actions/cache@v2
-      with:
-        path: ${{ steps.pip-cache.outputs.dir }}
-        key: ${{ runner.os }}-${{ matrix.python-version }}-${{ matrix.package }}-pip-${{ hashFiles('setup.cfg') }}
-        restore-keys: |
-          ${{ runner.os }}-${{ matrix.python-version }}-${{ matrix.package }}-pip-
+        cache: "pip"
 
     - name: Install dependencies
       run: |
@@ -51,20 +33,10 @@ jobs:
       shell: bash
 
     - name: Tests
-      env:
-        TEST_RESULTS: test-results-${{ runner.os }}-${{ matrix.python-version }}-${{ matrix.package }}.xml
       run: |
-        python -m pytest kaggle_imgclassif tests/${{ matrix.package }} -v --cov=kaggle_imgclassif --junitxml=junit/$TEST_RESULTS
-
-    - name: Upload pytest test results
-      uses: actions/upload-artifact@v2
-      with:
-        name: pytest-results-${{ runner.os }}-${{ matrix.python-version }}-${{ matrix.package }}
-        path: junit/test-results-${{ runner.os }}-${{ matrix.python-version }}-${{ matrix.package }}.xml
-      if: failure()
+        python -m pytest kaggle_imgclassif tests/${{ matrix.package }} -v --cov=kaggle_imgclassif
 
     - name: Statistics
-      if: success()
       run: |
         coverage report
         coverage xml
@@ -79,3 +51,18 @@ jobs:
         file: coverage.xml
         flags: cpu,pytest,python${{ matrix.python-version }},${{ matrix.package }}
         fail_ci_if_error: false
+
+
+  testing-guardian:
+    runs-on: ubuntu-latest
+    needs: pytester
+    if: always()
+    steps:
+      - run: echo "${{ needs.pytester.result }}"
+      - name: failing...
+        if: needs.pytester.result == 'failure'
+        run: exit 1
+      - name: cancelled or skipped...
+        if: contains(fromJSON('["cancelled", "skipped"]'), needs.pytester.result)
+        timeout-minutes: 1
+        run: sleep 90
