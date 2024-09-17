@@ -1,7 +1,6 @@
 # Kaggle: Image classification challenges
 
 ![CI complete testing](https://github.com/Borda/kaggle_image-classify/workflows/CI%20complete%20testing/badge.svg?branch=main&event=push)
-[![Code formatting](https://github.com/Borda/kaggle_image-classify/actions/workflows/code-format.yml/badge.svg?branch=main&event=push)](https://github.com/Borda/kaggle_image-classify/actions/workflows/code-format.yml)
 [![codecov](https://codecov.io/gh/Borda/kaggle_image-classify/branch/main/graph/badge.svg?token=5t1Aj5BIyS)](https://codecov.io/gh/Borda/kaggle_image-classify)
 [![pre-commit.ci status](https://results.pre-commit.ci/badge/github/Borda/kaggle_image-classify/main.svg)](https://results.pre-commit.ci/latest/github/Borda/kaggle_image-classify/main)
 

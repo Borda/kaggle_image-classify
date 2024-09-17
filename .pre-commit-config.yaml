@@ -1,5 +1,5 @@
 default_language_version:
-  python: python3.8
+  python: python3
 
 ci:
   autofix_prs: true
@@ -14,52 +14,30 @@ repos:
       - id: end-of-file-fixer
       - id: trailing-whitespace
       - id: check-case-conflict
+      - id: check-json
       - id: check-yaml
       - id: check-toml
-      #- id: pretty-format-json
       - id: check-added-large-files
         exclude: .*\.ipynb
         args: ['--maxkb=250', '--enforce-all']
       - id: check-docstring-first
       - id: detect-private-key
 
-  - repo: https://github.com/asottile/pyupgrade
-    rev: v3.16.0
-    hooks:
-      - id: pyupgrade
-        args: [--py37-plus]
-        name: Upgrade code
-
-  - repo: https://github.com/PyCQA/docformatter
-    rev: v1.7.5
-    hooks:
-      - id: docformatter
-        args: [--in-place, --wrap-summaries=115, --wrap-descriptions=120]
-
-  - repo: https://github.com/omnilib/ufmt
-    rev: v2.7.0
-    hooks:
-      - id: ufmt
-        additional_dependencies:
-          - black == 22.3.0
-          - usort == 1.0.2
-
   - repo: https://github.com/executablebooks/mdformat
     rev: 0.7.17
     hooks:
       - id: mdformat
+        args: ['--number']
         additional_dependencies:
           - mdformat-gfm
           - mdformat-black
           - mdformat_frontmatter
 
-  - repo: https://github.com/asottile/yesqa
-    rev: v1.5.0
-    hooks:
-      - id: yesqa
-
   - repo: https://github.com/astral-sh/ruff-pre-commit
     rev: v0.5.0
     hooks:
+      # try to fix what is possible
       - id: ruff
         args: ["--fix"]
+      # perform formatting updates
+      - id: ruff-format
