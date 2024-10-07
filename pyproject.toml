@@ -59,11 +59,12 @@ lint.extend-select = [
 lint.ignore = [
   "S101", # todo: Use of `assert` detected
 ]
-lint.unfixable = [
-  "F401",
-]
 [tool.ruff.lint.per-file-ignores]
 "setup.py" = ["D100", "SIM115"]
+"notebooks/**" = [
+    "E501", "F401", "F821",
+    "SIM115", # todo
+]
 "scripts_*/**" = [
     "S", "D"
 ]
