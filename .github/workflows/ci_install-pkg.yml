@@ -17,7 +17,7 @@ jobs:
 
       - name: Check package
         run: |
-          pip install check-manifest
+          pip install -U check-manifest setuptools
           check-manifest
           python setup.py check --metadata --strict
 
@@ -47,7 +47,7 @@ jobs:
 
       - name: Create package
         run: |
-          pip install setuptools wheel
+          pip install -U setuptools wheel
           python setup.py sdist bdist_wheel
 
       - name: Try installing
