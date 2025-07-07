@@ -67,5 +67,6 @@ lint.ignore = [
     "S", "D"
 ]
 "tests/**" = [
-    "S", "D"
+    "S", "D",
+    "PT028"
 ]
