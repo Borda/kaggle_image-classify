@@ -12,8 +12,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: ["ubuntu-22.04"]  # macOS-11, windows-2019
-        python-version: ["3.8"]
+        os: ["ubuntu-latest"]  # macOS-11, windows-2019
+        python-version: ["3.10"]
         package: ["plant_pathology", "imet_collect", "cassava", "birdclef"]
     # Timeout: https://stackoverflow.com/a/59076067/4521646
     timeout-minutes: 25
