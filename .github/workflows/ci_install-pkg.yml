@@ -8,12 +8,12 @@ on:  # Trigger the workflow on push or pull request, but only for the main branc
 
 jobs:
   pkg-check:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@master
       - uses: actions/setup-python@v5
         with:
-          python-version: "3.9"
+          python-version: "3.10"
 
       - name: Check package
         run: |
@@ -36,8 +36,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: ["ubuntu-22.04", "macOS-13", "windows-2022"]
-        python-version: ["3.9"]  # because of Kaggle
+        os: ["ubuntu-latest", "macOS-latest", "windows-latest"]
+        python-version: ["3.10"]  # because of Kaggle
     steps:
       - uses: actions/checkout@master
       - uses: actions/setup-python@v5
